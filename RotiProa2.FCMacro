@@ -1,0 +1,121 @@
+# -*- mode: python -*-
+
+import sys
+import os
+import FreeCAD
+import Part
+from FreeCAD import Base
+
+# Try to get the directory of the current file
+try:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+except NameError:
+    # If __file__ not defined, use macro directory
+    current_dir = FreeCAD.getUserMacroDir(True)
+
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+    
+# Remove any cached versions and then reload
+if 'parameters' in sys.modules:
+    del sys.modules['parameters']
+from parameters import *
+if 'shapes' in sys.modules:
+    del sys.modules['shapes']
+from shapes import * 
+if 'rig' in sys.modules:
+    del sys.modules['rig']
+from rig import * 
+if 'mirror' in sys.modules:
+    del sys.modules['mirror']
+from mirror import * 
+if 'single' in sys.modules:
+    del sys.modules['single']
+from single import * 
+if 'stats' in sys.modules:
+    del sys.modules['stats']
+from stats import * 
+if 'material' in sys.modules:
+    del sys.modules['material']
+from material import * 
+
+# Close all open documents
+for doc_name in App.listDocuments():
+    App.closeDocument(doc_name)
+
+# initialize FreeCAD document
+# clean up existing document
+
+doc_name = "Roti Proa II"
+if FreeCAD.ActiveDocument and FreeCAD.ActiveDocument.Name == doc_name:
+    doc = FreeCAD.ActiveDocument
+    # Clear all objects from existing document (in reverse order)
+    for obj in reversed(doc.Objects):
+        doc.removeObject(obj.Name)
+else:
+    # Close any existing document with this name
+    if doc_name in [d.Name for d in FreeCAD.listDocuments().values()]:
+        FreeCAD.closeDocument(doc_name)
+    doc = FreeCAD.newDocument(doc_name)
+
+# mirrored parts: Biru (blue) side is on the right as seen
+# standing on the vaka facing the ama
+
+biru = doc.addObject("App::Part", "Mirrored: Biru")
+mirror(biru)
+
+kuning = doc.addObject("App::Part", "Mirrored: Kuning")
+for obj in biru.Group:
+    mirrored_obj = kuning.newObject("Part::Feature", obj.Name)
+    
+    # Get the shape with its placement applied
+    shape = obj.Shape.copy()
+    
+    # Mirror the shape across the XZ plane (Y=0)
+    mirror_matrix = Base.Matrix()
+    mirror_matrix.scale(Base.Vector(1, -1, 1))  # Negate Y
+    shape = shape.transformGeometry(mirror_matrix)
+    
+    mirrored_obj.Shape = shape
+    mirrored_obj.Placement = obj.Placement  # Copy the placement too
+    
+    # Copy the color
+    mirrored_obj.ViewObject.ShapeColor = obj.ViewObject.ShapeColor
+
+# rig: translated in y-direction
+
+rig_biru = doc.addObject("App::Part", "Rig: Biru")
+rig(rig_biru, sail_angle=biru_sail_angle)  # 25 degree sail rotation
+rig_biru.Placement = FreeCAD.Placement(
+    Base.Vector(vaka_displacement, mast_distance_from_center, sole_thickness),
+    FreeCAD.Rotation(Base.Vector(0, 0, 1), biru_rig_rotation))  # no rig rotation
+
+rig_kuning = doc.addObject("App::Part", "Rig: Kuning")
+rig(rig_kuning, sail_angle=kuning_sail_angle)  # 25 degree sail rotation (same)
+rig_kuning.Placement = FreeCAD.Placement(
+    Base.Vector(vaka_displacement, - mast_distance_from_center, sole_thickness),
+    FreeCAD.Rotation(Base.Vector(0, 0, 1), kuning_rig_rotation))
+
+# single: unmirrored components: hull, sole, etc
+single(doc)
+
+# recompute before stats and rendering
+doc.recompute()
+
+# print out stats
+calculate_weight(doc)
+
+if 'view' in sys.modules:
+    del sys.modules['view']
+from view import * 
+
+# set preferred view
+view = FreeCAD.Gui.ActiveDocument.ActiveView
+view.viewIsometric()  # or viewFront(), viewTop(), etc.
+view.fitAll()
+
+set_interior_view()
+#set_mast_view()
+#set_cockpit_view()
+#set_below_view()
+#set_sail_view()
