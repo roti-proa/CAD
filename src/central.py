@@ -36,7 +36,7 @@ def central(vessel):
     cockpit_cutter_placement = FreeCAD.Placement(
         Base.Vector(vaka_displacement - vaka_width - 500,
                     - cockpit_length / 2,
-                    freeboard - 50), 
+                    overhead_base_level - 50), 
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
     cockpit_cutter_transformed = cockpit_cutter.transformGeometry(
         cockpit_cutter_placement.toMatrix())
@@ -48,42 +48,54 @@ def central(vessel):
                                          vaka_width,
                                          overhead_thickness)
     overhead.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement, 0, freeboard),
+        Base.Vector(vaka_displacement, 0, overhead_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
     overhead.Shape = overhead.Shape.cut(cockpit_cutter_transformed)
     set_color(overhead, color_plywood)
 
-    # sole: floor of vessel
-    
-    sole = vessel.newObject("Part::Feature", "Sole")
-    # Create the flat sole cylinder
-    sole_cylinder = elliptical_cylinder(vaka_length,
-                                        vaka_width,
-                                        sole_thickness)
-    # Create an ellipsoid with same length/width, but height = 2 * sole_thickness
+    # bottom: part of the hull below the sole
+    bottom = vessel.newObject("Part::Feature", "Bottom")
+    # Create the flat bottom cylinder to cut from bottom
+    bottom_cylinder = elliptical_cylinder(vaka_length + 5,
+                                          vaka_width + 5,
+                                          bottom_height + 5)
+    # Create an ellipsoid for bottom, height = 2 * bottom_thickness
     # This will create a curved bottom shape
     bottom_ellipsoid = ellipsoid(vaka_length, 
                                  vaka_width, 
-                                 2 * sole_thickness)
-    # Position the ellipsoid so its top half intersects with the sole cylinder
-    # The ellipsoid center is at (0,0,0), and its height is 2*sole_thickness
-    # So its top is at z = sole_thickness
-    # We want the ellipsoid centered so it creates a nice curve
-    ellipsoid_placement = Base.Matrix()
-    ellipsoid_placement.move(Base.Vector(0, 0, sole_thickness))
-    bottom_ellipsoid_positioned = bottom_ellipsoid.transformGeometry(ellipsoid_placement)
+                                 bottom_height * 2)
+    bottom_ellipsoid_inner = ellipsoid(
+        vaka_length - 2 * bottom_thickness, 
+        vaka_width - 2 * bottom_thickness, 
+        bottom_height * 2 - 2 * bottom_thickness)
     # Intersect the cylinder with the ellipsoid to get the curved bottom
-    sole.Shape = sole_cylinder.common(bottom_ellipsoid_positioned)
+    bottom.Shape = (bottom_ellipsoid.cut(bottom_cylinder)
+                    .cut(bottom_ellipsoid_inner))
+    bottom.Placement = FreeCAD.Placement(
+        Base.Vector(vaka_displacement, 0, bottom_height),
+        FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
+    set_color(bottom, color_bottom)
+
+    # sole: floor of cabin
+    sole = vessel.newObject("Part::Feature", "Bottom")
+    # Create the flat bottom cylinder to cut from bottom
+    sole.Shape = elliptical_cylinder(vaka_length - 2 * vaka_thickness,
+                                          vaka_width - 2 * vaka_thickness,
+                                          sole_thickness)
     sole.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement, 0, 0),
+        Base.Vector(vaka_displacement, 0, bottom_height),
         FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
     set_color(sole, color_sole)
-
+    
+    # hull: exterior from sole base level (bottom height) upwards
+    #       to gunwale base level
     hull = vessel.newObject("Part::Feature", "Hull")
-    hull.Shape = elliptical_pipe(vaka_length, vaka_width,
-                                 vaka_thickness, freeboard - sole_thickness)
+    hull.Shape = elliptical_pipe(vaka_length,
+                                 vaka_width,
+                                 vaka_thickness,
+                                 freeboard)
     hull.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement, 0, sole_thickness),
+        Base.Vector(vaka_displacement, 0, bottom_height),
         FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
     set_color(hull, color_hull_exterior)
 
@@ -91,7 +103,7 @@ def central(vessel):
     gunwale.Shape = elliptical_pipe(vaka_length, vaka_width,
                                     gunwale_width, gunwale_height)
     gunwale.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement, 0, freeboard - gunwale_height),
+        Base.Vector(vaka_displacement, 0, gunwale_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
     set_color(gunwale, color_hull_exterior)
 
@@ -119,3 +131,33 @@ def central(vessel):
                     aka_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
     set_color(center_crossdeck_stanchion, color_aluminum)
+
+    motor_backing_plate = (
+        vessel.newObject("Part::Feature",
+                         "Motor_Backing_Plate (aluminum)"))
+    motor_backing_plate.Shape = Part.makeBox(
+        motor_backing_plate_thickness * 2 + vaka_thickness,
+        motor_backing_plate_length,
+        motor_backing_plate_height)
+    motor_backing_plate.Placement = FreeCAD.Placement(
+        Base.Vector(vaka_displacement - vaka_width / 2 - motor_backing_plate_thickness,
+                    - motor_backing_plate_length / 2,
+                    motor_backing_plate_above_sole),
+        FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+    set_color(center_crossdeck_stanchion, color_aluminum)
+
+    side_board_plate = (
+        vessel.newObject("Part::Feature",
+                         "Side_Board_Plate (aluminum)"))
+    side_board_plate.Shape = Part.makeBox(
+        side_board_plate_thickness * 2 + vaka_thickness,
+        side_board_plate_length,
+        side_board_plate_height)
+    side_board_plate.Placement = FreeCAD.Placement(
+        Base.Vector(vaka_displacement + vaka_width / 2
+                    - side_board_plate_thickness - vaka_thickness,
+                    - side_board_plate_length / 2,
+                    side_board_plate_above_sole),
+        FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+    set_color(center_crossdeck_stanchion, color_aluminum)
+

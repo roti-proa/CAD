@@ -19,7 +19,6 @@ deck_thickness = 9
 ama_diameter = 200
 ama_thickness = 10
 ama_length = 4000
-ama_cone_length = 500
 
 stringer_width = 25
 stringer_thickness = 3
@@ -37,7 +36,9 @@ vaka_width = 500
 vaka_thickness = 5
 
 overhead_thickness = 3
-sole_thickness = 150
+sole_thickness = 7
+bottom_height = 10
+bottom_thickness = vaka_thickness
 
 crossdeck_width = 650
 crossdeck_thickness = deck_thickness
@@ -51,8 +52,12 @@ cockpit_length = panel_width + crossdeck_width - aka_width
 panel_stringer_offset = panel_length / 4 - stringer_width / 2
 panel_stringer_length = crossdeck_width + panels_longitudinal * panel_width
 
-freeboard = 600
-aka_base_level = freeboard + overhead_thickness
+gunwale_width = 3 * mm_in_one_inch
+gunwale_height = 2 * mm_in_one_inch
+freeboard = 600 - gunwale_height
+gunwale_base_level = bottom_height + freeboard
+overhead_base_level = gunwale_base_level + gunwale_height
+aka_base_level = overhead_base_level + overhead_thickness
 stringer_base_level = aka_base_level + aka_height
 panel_base_level = stringer_base_level + stringer_width
 deck_base_level = panel_base_level
@@ -62,7 +67,7 @@ stanchion_diameter = 20
 stanchion_length = 600
 stanchion_thickness = 3
 
-# in this design, akas, spine and pillars are all made
+# in this design, spine and pillars are all made
 # from the same SHS sizes
 
 spine_thickness = aka_thickness
@@ -70,9 +75,16 @@ spine_width = aka_width
 spine_base_level = aka_base_level - spine_width
 spine_length = panel_width * panels_longitudinal + crossdeck_width
 
+beam = aka_length + aka_cap_thickness - spine_width + ama_diameter / 2
+
 pillar_thickness = aka_thickness
 pillar_width = aka_width
 pillar_height = spine_base_level - ama_thickness
+
+# cone starts at outer edge of outermost pillar
+ama_cone_length = (ama_length -
+                   (panel_width * (panels_longitudinal - 1) +
+                    pillar_width + crossdeck_width)) / 2
 
 # Cross-bracing between pillars (X-shaped reinforcements)
 brace_diameter = 5  # thin aluminum rod/wire
@@ -82,18 +94,17 @@ brace_lower_offset = 400  # distance from ama to lower corners of X
 # Pillar-to-aka diagonal braces (triangulation)
 pillar_brace_vertical_offset = 500  # vertical distance down pillar from aka base level
 
-# distance from the center line of ama to center line of vaka
+# distance from x=0 (center line of ama) to center line of vaka
 vaka_displacement = (- pillar_width / 2
                      + panel_length * panels_transversal
                      + deck_width / 2)
 
-gunwale_width = 3 * mm_in_one_inch
-gunwale_height = 2 * mm_in_one_inch
-
 mast_diameter = 80
 mast_thickness = 5
 mast_height = 5000
-mast_distance_from_center = vaka_length / 4 # adjustment to not cut into aka
+mast_distance_from_center = vaka_length / 4 + 0
+# adjustment to not cut into aka
+mast_base_level = bottom_height + sole_thickness
 
 mast_partner_length = vaka_width - 110
 mast_partner_width = mast_diameter + 200
@@ -134,8 +145,8 @@ sail_thickness = 2  # thin membrane
 
 rudder_post_diameter = 50
 rudder_head_length = 200
-rudder_blade_length = 500
-rudder_blade_height = 500
+rudder_blade_length = 400
+rudder_blade_height = 400
 rudder_distance_from_vaka = 100
-rudder_below_sole = 500
+rudder_below_bottom = 400
 

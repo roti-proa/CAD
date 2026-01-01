@@ -20,14 +20,14 @@ def rig(the_rig, sail_angle=0, sail_camber=10000):
     mast = the_rig.newObject("Part::Feature", "Mast")
     mast.Shape = pipe(mast_diameter, mast_thickness, mast_height)
     mast.Placement = FreeCAD.Placement(
-        Base.Vector(0, 0, 0),
+        Base.Vector(0, 0, mast_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
     set_color(mast, color_aluminum)
 
     mast_cap = the_rig.newObject("Part::Feature", "Mast Cap")
     mast_cap.Shape = Part.makeCylinder(mast_cap_diameter / 2, mast_cap_thickness)    
     mast_cap.Placement = FreeCAD.Placement(
-        Base.Vector(0, 0, mast_height),
+        Base.Vector(0, 0, mast_height + mast_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
     set_color(mast_cap, color_aluminum)
     
@@ -151,16 +151,90 @@ def rudder(the_rudder):
 
     # post
     
-    post = the_rudder.newObject("Part::Feature", "Rudder Post")
+    post = the_rudder.newObject("Part::Feature", "Rudder Post (steel)")
     post.Shape = Part.makeCylinder(rudder_post_diameter / 2,
                                    stringer_base_level
                                    + rudder_head_length
-                                   + rudder_below_sole)
+                                   + rudder_below_bottom)
     post.Placement = FreeCAD.Placement(
         Base.Vector(0, 0, 0),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
     set_color(post, color_aluminum)
 
-    return post
+    bearing_block = the_rudder.newObject("Part::Feature", "Rudder Bearing Block (aluminum)")
+    bearing_block.Shape = Part.makeCylinder(rudder_bearing_block_diameter / 2,
+                                            rudder_bearing_block_height)
+    bearing_block.Placement = FreeCAD.Placement(
+        Base.Vector(0, 0, stringer_base_level + rudder_below_bottom),
+        FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+    set_color(bearing_block, color_aluminum)
 
+    aka_mount_pin = the_rudder.newObject("Part::Feature", "Rudder Mount Pin (aluminum")
+    aka_mount_pin.Shape = Part.makeCylinder(rudder_aka_mount_pin_diameter / 2,
+                                            rudder_aka_mount_pin_length)
+    aka_mount_pin.Placement = FreeCAD.Placement(
+        Base.Vector(0,
+                    rudder_aka_mount_pin_length / 2,
+                    stringer_base_level + rudder_below_bottom + stringer_width / 2),
+        FreeCAD.Rotation(Base.Vector(1, 0, 0), 90))
+    set_color(aka_mount_pin, color_aluminum)
 
+    cap = the_rudder.newObject("Part::Feature", "Rudder Cap (steel)")
+    cap.Shape = Part.makeCylinder(rudder_cap_diameter / 2,
+                                  deck_thickness)
+    cap.Placement = FreeCAD.Placement(
+        Base.Vector(0, 0, rudder_below_bottom + deck_base_level),
+        FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+    set_color(cap, color_aluminum)
+
+    # tillers (A and B): SHS rods that come from aka mount pin and go to vaka
+    
+    tiller_a = the_rudder.newObject("Part::Feature", f"Tiller_A (aluminum)")
+    tiller_a.Shape = shs(tiller_width, tiller_thickness, tiller_length)
+    tiller_rot1 = FreeCAD.Rotation(Base.Vector(-1, 0, 0), 90)
+    tiller_a_rot2 = FreeCAD.Rotation(Base.Vector(0, 1, 0), 90 + tiller_angle)
+    tiller_a_rotation = tiller_rot1.multiply(tiller_a_rot2)    
+    tiller_a.Placement = FreeCAD.Placement(
+        Base.Vector(- tiller_width / 2,
+                    rudder_aka_mount_pin_length / 2,
+                    stringer_base_level + rudder_below_bottom + tiller_width),
+        tiller_a_rotation)
+    set_color(tiller_a, color_aluminum)
+    
+    tiller_b = the_rudder.newObject("Part::Feature", f"Tiller_B (aluminum)")
+    tiller_b.Shape = shs(tiller_width, tiller_thickness, tiller_length)
+    tiller_b_rot2 = FreeCAD.Rotation(Base.Vector(0, 1, 0), 90 - tiller_angle)
+    tiller_b_rotation = tiller_rot1.multiply(tiller_b_rot2)    
+    tiller_b.Placement = FreeCAD.Placement(
+        Base.Vector(- tiller_width / 2,
+                    - rudder_aka_mount_pin_length / 2 + tiller_width,
+                    stringer_base_level + rudder_below_bottom + tiller_width),
+        tiller_b_rotation)
+    set_color(tiller_b, color_aluminum)
+
+    # steel ribs (rods) for rudder
+    rib_spacing = (rudder_blade_height - 2 * rudder_rim) / (rudder_ribs - 1)
+    for i in range(0, rudder_ribs - 1):
+        rib = the_rudder.newObject("Part::Feature", f"Rudder_Rib_{i} (aluminum)")
+        rib.Shape = Part.makeCylinder(rudder_rib_diameter / 2,
+                                      rudder_rib_length)
+        rib.Placement = FreeCAD.Placement(
+            Base.Vector(0,
+                        rudder_rib_length / 2,
+                        rudder_rim + i * rib_spacing),
+            FreeCAD.Rotation(Base.Vector(1, 0, 0), 90))
+        set_color(rib, color_aluminum)
+
+    # blade: thin sheet to indicate the shape of rudder
+    blade = the_rudder.newObject("Part::Feature", "Rudder_Blade (plywood)")
+    blade.Shape = Part.makeBox(rudder_blade_thickness,
+                               rudder_blade_length,
+                               rudder_blade_height)
+    blade.Placement = FreeCAD.Placement(
+        Base.Vector(- rudder_blade_thickness / 2,
+                    - rudder_blade_length / 2,
+                    0),
+        FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+    set_color(blade, color_plywood)
+
+    

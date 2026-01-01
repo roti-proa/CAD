@@ -1,8 +1,11 @@
-I: 543                          ~=====~ ~======= 
-II: 589 (has bulge, losing 32cm) ====== =======<
+I: 543                           ~======~ ~=======|
+II: 589 (has bulge, losing 32cm) |======~ ~=======<
 
 OK. I'm wondering if the sails are big enough. what do you think?  At the moment, we two sails each 4.5m x 4.5m for a boat of LOA 9m.
 
-300 (II)  343(I)  289
+295 (II)  343(I)  294 (II)
  <=====< ~====== =====>
 
+118
+
+100 25 25

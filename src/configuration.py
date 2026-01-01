@@ -12,7 +12,7 @@ for i, arg in enumerate(sys.argv):
 print(f"DEBUG: sys.argv = {sys.argv}")
 print(f"DEBUG: macro_args = {macro_args}")
 
-# Get parameter file from command line, default to RP2
+# Get parameter file from command line, default to default
 configuration_file = macro_args[1] if macro_args else 'configurations.default'
 
 print(f"DEBUG: param_file = {configuration_file}")

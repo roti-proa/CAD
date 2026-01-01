@@ -1,3 +1,5 @@
+from parameters import *
+
 from material import *
 
 def calculate_weight(doc):
@@ -62,6 +64,12 @@ def calculate_weight(doc):
         print(f"{mat_name}: {weight_kg:.2f} kg")
     
     print(f"\nTotal weight: {total_weight:.2f} kg")
+    print(f"{'='*60}\n")
+
+    print(f"\nUseful measurements:")
+    print(f"\ncockpit length: {cockpit_length} mm")
+    print(f"ama cone length: {ama_cone_length} mm")
+    print(f"beam: {beam} mm")
     print(f"{'='*60}\n")
     
     return total_weight

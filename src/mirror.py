@@ -283,7 +283,7 @@ def mirror(side):
     mast_partner.Placement = FreeCAD.Placement(
         Base.Vector(vaka_displacement - mast_partner_length / 2,
                     mast_distance_from_center - mast_partner_width / 2,
-                    freeboard + overhead_thickness),
+                    aka_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
     set_color(mast_partner, color_plywood)
 
@@ -297,12 +297,127 @@ def mirror(side):
     mast_step.Placement = FreeCAD.Placement(
         Base.Vector(vaka_displacement,
                     mast_distance_from_center,
-                    sole_thickness),
+                    mast_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
     set_color(mast_step, color_aluminum)
 
-    # crossdeck
+    # hull cylinder for cutting rudder vaka mounts
+    
+    hull_cylinder = elliptical_cylinder(vaka_length,
+                                          vaka_width,
+                                          1000)
+    hull_cylinder.Placement = FreeCAD.Placement(
+        Base.Vector(vaka_displacement, 0, bottom_height),
+        FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
 
+    # rudder vaka mounts: braces to support the rudder
+
+    # rudder vaka mount A: inner brace
+    
+    rudder_vaka_mount_a = side.newObject("Part::Feature", "Rudder_Vaka_Mount_A (aluminum)")
+    rudder_vaka_mount_a_shape = shs(spine_width, spine_thickness, rudder_vaka_mount_length)
+    # rotate shape around x axis first
+    rudder_vaka_mount_a_shape.rotate(
+        Base.Vector(0, 0, 0),
+        Base.Vector(1, 0, 0),
+        90)
+    # then translate so that the origin aligns with the center where the pole goes
+    rudder_vaka_mount_a_shape.translate(Base.Vector(-spine_width / 2, spine_width / 2, 0))
+    # then rotate in y axis around origin
+    rudder_vaka_mount_a_shape.rotate(
+        Base.Vector(0, 0, 0),
+        Base.Vector(0, 0, 1),
+        135 - rudder_vaka_mount_angle)
+    # translate to the correct position (somehow, ".Placement = ..." not working here)
+    rudder_vaka_mount_a_shape.translate(Base.Vector(vaka_displacement
+                    - vaka_width / 2
+                    - rudder_distance_from_vaka
+                    ,
+                    cockpit_length / 2
+                    + (panels_longitudinal / 2 - 1) * panel_width
+                    + aka_width / 2,
+                    rudder_vaka_mount_base_level))
+    rudder_vaka_mount_a_shape = rudder_vaka_mount_a_shape.cut(hull_cylinder)
+    rudder_vaka_mount_a.Shape = rudder_vaka_mount_a_shape
+    set_color(rudder_vaka_mount_a, color_aluminum)
+
+    hull_cylinder_bigger = elliptical_cylinder(vaka_length + rudder_vaka_backing_plate_thickness,
+                                          vaka_width + rudder_vaka_backing_plate_thickness,
+                                          1000)
+    hull_cylinder_bigger.rotate(
+        Base.Vector(0, 0, 0),
+        Base.Vector(0, 0, 1), 90)
+    hull_cylinder_bigger.translate(Base.Vector(vaka_displacement, 0, bottom_height))
+
+    # hackish way to make chain plates:
+    # intersect the mount with an enlarged hull, extrude it outwards,
+    # take the outer wire and extrude it into the hull
+    rudder_vaka_mount_a_backing_plate = side.newObject("Part::Feature", "Rudder_Vaka_Mount_a_backing_plate (aluminum)")
+    rudder_vaka_mount_a_backing_plate_shape = rudder_vaka_mount_a.Shape.common(hull_cylinder_bigger)
+    rudder_vaka_mount_a_center = rudder_vaka_mount_a_backing_plate_shape.BoundBox.Center
+    rudder_vaka_mount_a_matrix = Base.Matrix()
+    rudder_vaka_mount_a_matrix.move(Base.Vector(-rudder_vaka_mount_a_center.x, -rudder_vaka_mount_a_center.y, -rudder_vaka_mount_a_center.z))
+    rudder_vaka_mount_a_matrix.scale(1.0, 2.0, 2.0)  # scale in y and z direction
+    rudder_vaka_mount_a_matrix.move(Base.Vector(rudder_vaka_mount_a_center.x, rudder_vaka_mount_a_center.y, rudder_vaka_mount_a_center.z))
+    rudder_vaka_mount_a_backing_plate_shape = rudder_vaka_mount_a_backing_plate_shape.transformGeometry(rudder_vaka_mount_a_matrix)
+    rudder_vaka_mount_a_wires = rudder_vaka_mount_a_backing_plate_shape.Wires
+    rudder_vaka_mount_a_outer_wire = max(rudder_vaka_mount_a_wires, key=lambda w: w.BoundBox.DiagonalLength)
+    rudder_vaka_mount_a_face = Part.Face(rudder_vaka_mount_a_outer_wire)
+    rudder_vaka_mount_a_backing_plate_shape = rudder_vaka_mount_a_face.extrude(Base.Vector(
+        rudder_vaka_backing_plate_thickness * 2 + vaka_thickness,
+        0, 0))
+    rudder_vaka_mount_a_backing_plate.Shape = rudder_vaka_mount_a_backing_plate_shape
+    
+    # rudder vaka mount B: outer brace
+    
+    rudder_vaka_mount_b = side.newObject("Part::Feature", "Rudder_Vaka_Mount_b (aluminum)")
+    rudder_vaka_mount_b_shape = shs(spine_width, spine_thickness, rudder_vaka_mount_length)
+    # rotate shape around x axis first
+    rudder_vaka_mount_b_shape.rotate(
+        Base.Vector(0, 0, 0),
+        Base.Vector(1, 0, 0),
+        90)
+    # then translate so that the origin aligns with the center where the pole goes
+    rudder_vaka_mount_b_shape.translate(Base.Vector(-spine_width / 2, spine_width / 2, 0))
+    # then rotate in y axis around origin
+    rudder_vaka_mount_b_shape.rotate(
+        Base.Vector(0, 0, 0),
+        Base.Vector(0, 0, 1),
+        45 - rudder_vaka_mount_angle)
+    # translate to the correct position (somehow, ".Placement = ..." not working here)
+    rudder_vaka_mount_b_shape.translate(Base.Vector(vaka_displacement
+                    - vaka_width / 2
+                    - rudder_distance_from_vaka
+                    ,
+                    cockpit_length / 2
+                    + (panels_longitudinal / 2 - 1) * panel_width
+                    + aka_width / 2,
+                    rudder_vaka_mount_base_level))
+    rudder_vaka_mount_b_shape = rudder_vaka_mount_b_shape.cut(hull_cylinder)
+    rudder_vaka_mount_b.Shape = rudder_vaka_mount_b_shape
+    set_color(rudder_vaka_mount_b, color_aluminum)
+
+    # hackish way to make chain plates:
+    # intersect the mount with an enlarged hull, extrude it outwards,
+    # take the outer wire and extrude it into the hull
+    rudder_vaka_mount_b_backing_plate = side.newObject("Part::Feature", "rudder_vaka_mount_b_backing_plate (aluminum)")
+    rudder_vaka_mount_b_backing_plate_shape = rudder_vaka_mount_b.Shape.common(hull_cylinder_bigger)
+    rudder_vaka_mount_b_center = rudder_vaka_mount_b_backing_plate_shape.BoundBox.Center
+    rudder_vaka_mount_b_matrix = Base.Matrix()
+    rudder_vaka_mount_b_matrix.move(Base.Vector(-rudder_vaka_mount_b_center.x, -rudder_vaka_mount_b_center.y, -rudder_vaka_mount_b_center.z))
+    rudder_vaka_mount_b_matrix.scale(1.0, 2.0, 2.0)  # scale in y and z direction
+    rudder_vaka_mount_b_matrix.move(Base.Vector(rudder_vaka_mount_b_center.x, rudder_vaka_mount_b_center.y, rudder_vaka_mount_b_center.z))
+    rudder_vaka_mount_b_backing_plate_shape = rudder_vaka_mount_b_backing_plate_shape.transformGeometry(rudder_vaka_mount_b_matrix)
+    rudder_vaka_mount_b_wires = rudder_vaka_mount_b_backing_plate_shape.Wires
+    rudder_vaka_mount_b_outer_wire = max(rudder_vaka_mount_b_wires, key=lambda w: w.BoundBox.DiagonalLength)
+    rudder_vaka_mount_b_face = Part.Face(rudder_vaka_mount_b_outer_wire)
+    rudder_vaka_mount_b_backing_plate_shape = rudder_vaka_mount_b_face.extrude(Base.Vector(
+        rudder_vaka_backing_plate_thickness * 2 + vaka_thickness,
+        0, 0))
+    rudder_vaka_mount_b_backing_plate.Shape = rudder_vaka_mount_b_backing_plate_shape
+    
+    # crossdeck
+    
     crossdeck = side.newObject("Part::Feature", "Crossdeck (plywood)")
     crossdeck.Shape = Part.makeBox(crossdeck_length,
                                  crossdeck_width / 2,
@@ -327,7 +442,8 @@ def mirror(side):
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
     set_color(trap_cover, color_deck)
 
-    # ama
+    # ama: upper and lower for color effect
+    
     large = 1000000
     ama_cutter = Part.makeBox(large, large, large,
                           Base.Vector(-large/2, 0, -large/2))
@@ -348,7 +464,7 @@ def mirror(side):
     ama_body_lower.Placement = FreeCAD.Placement(
         Base.Vector(0, ama_length / 2 - ama_cone_length, ama_diameter / 2),
         FreeCAD.Rotation(Base.Vector(1, 0, 0), 90))
-    set_color(ama_body_lower, color_sole)
+    set_color(ama_body_lower, color_bottom)
 
     ama_cone_upper = side.newObject("Part::Feature", "Ama cone (pvc)")
     ama_cone_upper.Shape = hollow_cone(ama_diameter,
@@ -368,5 +484,5 @@ def mirror(side):
     ama_cone_lower.Placement = FreeCAD.Placement(
         Base.Vector(0, ama_length / 2 - ama_cone_length, ama_diameter / 2),
         FreeCAD.Rotation(Base.Vector(1, 0, 0), 270))
-    set_color(ama_cone_lower, color_sole)
+    set_color(ama_cone_lower, color_bottom)
 

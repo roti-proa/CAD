@@ -191,7 +191,7 @@ rudder_biru.Placement = FreeCAD.Placement(
                 cockpit_length / 2
                 + (panels_longitudinal / 2 - 1) * panel_width
                 + aka_width / 2,
-                - rudder_below_sole),
+                - rudder_below_bottom),
     FreeCAD.Rotation(Base.Vector(0, 0, 1), rudder_rotation_biru))
 
 # rudder_kuning with rudder_rotation_kuning
@@ -204,7 +204,7 @@ rudder_kuning.Placement = FreeCAD.Placement(
                 - cockpit_length / 2
                 - (panels_longitudinal / 2 - 1) * panel_width
                 - aka_width / 2,
-                - rudder_below_sole),
+                - rudder_below_bottom),
     FreeCAD.Rotation(Base.Vector(0, 0, 1), rudder_rotation_kuning))
 
 # boat: central unmirrored components: hull, sole, etc
