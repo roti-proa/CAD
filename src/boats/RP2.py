@@ -11,7 +11,7 @@ mm_in_one_inch = 25.4
 
 panel_length = 1762
 panel_width = 1134
-panel_height = 30
+panel_height = 4
 
 deck_width = 2000
 deck_thickness = 9
@@ -37,7 +37,7 @@ vaka_thickness = 5
 
 overhead_thickness = 3
 sole_thickness = 9
-bottom_height = 200
+bottom_height = 8 * mm_in_one_inch # according to Eng Boon
 bottom_thickness = vaka_thickness
 
 crossdeck_width = 900
@@ -94,9 +94,9 @@ brace_lower_offset = 400  # distance from ama to lower corners of X
 pillar_brace_vertical_offset = 500  # vertical distance down pillar from aka base level
 
 # distance from x=0 (center line of ama) to center line of vaka
-vaka_displacement = (- pillar_width / 2
-                     + panel_length * panels_transversal
-                     + deck_width / 2)
+vaka_x_offset = (- pillar_width / 2
+                 + panel_length * panels_transversal
+                 + deck_width / 2)
 
 mast_diameter = 152.4
 mast_thickness = 6.35
@@ -142,7 +142,6 @@ sail_thickness = 2  # thin membrane
 # rudder
 
 rudder_post_diameter = 50
-rudder_head_length = 0
 rudder_blade_length = 500
 rudder_blade_height = 500
 rudder_blade_thickness = 5
@@ -153,8 +152,6 @@ rudder_bearing_block_diameter = 80
 rudder_bearing_block_height = stringer_width
 rudder_aka_mount_pin_diameter = 10
 rudder_aka_mount_pin_length = 150
-
-rudder_cap_diameter = 150
 
 rudder_vaka_mount_length = 800
 rudder_vaka_mount_angle = 5

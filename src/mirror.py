@@ -28,7 +28,7 @@ def mirror(side):
         set_color(aka, color_aluminum)
 
         stanchion = side.newObject("Part::Feature",
-                                   f"Stanchion_{i} (aluminum)")
+                                   f"Stanchion_{i} (steel)")
         stanchion.Shape = pipe(stanchion_diameter,
                                stanchion_thickness,
                                stanchion_length)
@@ -161,7 +161,7 @@ def mirror(side):
                                   stanchion_thickness,
                                   stanchion_length)
     outer_stanchion.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement
+        Base.Vector(vaka_x_offset
                     + deck_width / 2 - aka_width / 2,
                     vaka_length / 2 - aka_width / 2,
                     aka_base_level),
@@ -174,7 +174,7 @@ def mirror(side):
                                   stanchion_thickness,
                                   stanchion_length)
     center_stanchion.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement,
+        Base.Vector(vaka_x_offset,
                     vaka_length / 2 - aka_width / 2,
                     aka_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
@@ -186,7 +186,7 @@ def mirror(side):
                                   stanchion_thickness,
                                   stanchion_length)
     inner_stanchion.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement
+        Base.Vector(vaka_x_offset
                     - deck_width / 2 + aka_width / 2,
                     vaka_length / 2 - gunwale_width / 2,
                     aka_base_level),
@@ -223,7 +223,7 @@ def mirror(side):
 
     for i in range(0, panels_longitudinal // 2):
         for j in range(0, panels_transversal):
-            panel = side.newObject("Part::Feature", f"Panel_{i}_{j}")
+            panel = side.newObject("Part::Feature", f"Panel_{i}_{j} (solar)")
             panel.Shape = Part.makeBox(panel_length,
                                        panel_width,
                                        panel_height)
@@ -242,26 +242,23 @@ def mirror(side):
                                   stringer_thickness,
                                   (vaka_length - cockpit_length) / 2)
         deck_stringer.Placement = FreeCAD.Placement(
-            Base.Vector(vaka_displacement - deck_width / 2 +
+            Base.Vector(vaka_x_offset - deck_width / 2 +
                         (deck_width - stringer_width) / (deck_stringers - 1) * i,
                         vaka_length / 2,
                         stringer_base_level),
             FreeCAD.Rotation(Base.Vector(1, 0, 0), 90))
         set_color(deck_stringer, color_aluminum)
 
-    # trap cover stringer
-    """
-    trap_cover_stringer = side.newObject("Part::Feature", "Trap Cover Stringer (aluminum)")
-    trap_cover_stringer.Shape = shs(stringer_width, stringer_thickness,
-                                panel_width + aka_width / 2)
-    trap_cover_stringer.Placement = FreeCAD.Placement(
-        Base.Vector(crossdeck_length - spine_width / 2 - stringer_width,
-                    0,
-                    deck_base_level - spine_width / 4),
-        FreeCAD.Rotation(Base.Vector(1, 0, 0), 90))
-    set_color(trap_cover_stringer, color_aluminum)
-    """
-    
+    # cylinder to cut rudder cap hole into deck
+    deck_cutter = Part.makeCylinder(rudder_aka_mount_pin_length / 2 + 12,
+                                    1000)
+    deck_cutter.translate(Base.Vector(
+        vaka_x_offset - vaka_width / 2 - rudder_distance_from_vaka,
+        cockpit_length / 2
+        + (panels_longitudinal / 2 - 1) * panel_width
+        + aka_width / 2,                          
+        gunwale_base_level))
+        
     # deck
 
     deck = side.newObject("Part::Feature", "Deck (plywood)")
@@ -269,19 +266,20 @@ def mirror(side):
                               (vaka_length - cockpit_length) / 2,
                               deck_thickness)
     deck.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement - deck_width / 2,
+        Base.Vector(vaka_x_offset - deck_width / 2,
                     cockpit_length / 2,
                     deck_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+    deck.Shape = deck.Shape.cut(deck_cutter)
     set_color(deck, color_deck)
 
     # mast partner: reinforced deck collar supporting mast laterally 
     # this must be here, not in rig.py (it will rotate otherwise)
-    mast_partner = side.newObject("Part::Feature", "Mast Partner (plywood)")
+    mast_partner = side.newObject("Part::Feature", "Mast Partner (wood)")
     mast_partner.Shape = Part.makeBox(
         mast_partner_length, mast_partner_width, mast_partner_thickness)
     mast_partner.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement - mast_partner_length / 2,
+        Base.Vector(vaka_x_offset - mast_partner_length / 2,
                     mast_distance_from_center - mast_partner_width / 2,
                     aka_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
@@ -295,7 +293,7 @@ def mirror(side):
         (mast_step_outer_diameter - mast_step_inner_diameter) / 2,
         mast_step_height)
     mast_step.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement,
+        Base.Vector(vaka_x_offset,
                     mast_distance_from_center,
                     mast_base_level),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
@@ -307,7 +305,7 @@ def mirror(side):
                                           vaka_width,
                                           1000)
     hull_cylinder.Placement = FreeCAD.Placement(
-        Base.Vector(vaka_displacement, 0, bottom_height),
+        Base.Vector(vaka_x_offset, 0, bottom_height),
         FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
 
     # rudder vaka mounts: braces to support the rudder
@@ -329,10 +327,9 @@ def mirror(side):
         Base.Vector(0, 0, 1),
         135 - rudder_vaka_mount_angle)
     # translate to the correct position (somehow, ".Placement = ..." not working here)
-    rudder_vaka_mount_a_shape.translate(Base.Vector(vaka_displacement
+    rudder_vaka_mount_a_shape.translate(Base.Vector(vaka_x_offset
                     - vaka_width / 2
-                    - rudder_distance_from_vaka
-                    ,
+                    - rudder_distance_from_vaka,
                     cockpit_length / 2
                     + (panels_longitudinal / 2 - 1) * panel_width
                     + aka_width / 2,
@@ -347,7 +344,7 @@ def mirror(side):
     hull_cylinder_bigger.rotate(
         Base.Vector(0, 0, 0),
         Base.Vector(0, 0, 1), 90)
-    hull_cylinder_bigger.translate(Base.Vector(vaka_displacement, 0, bottom_height))
+    hull_cylinder_bigger.translate(Base.Vector(vaka_x_offset, 0, bottom_height))
 
     # hackish way to make chain plates:
     # intersect the mount with an enlarged hull, extrude it outwards,
@@ -385,10 +382,9 @@ def mirror(side):
         Base.Vector(0, 0, 1),
         45 - rudder_vaka_mount_angle)
     # translate to the correct position (somehow, ".Placement = ..." not working here)
-    rudder_vaka_mount_b_shape.translate(Base.Vector(vaka_displacement
+    rudder_vaka_mount_b_shape.translate(Base.Vector(vaka_x_offset
                     - vaka_width / 2
-                    - rudder_distance_from_vaka
-                    ,
+                    - rudder_distance_from_vaka,
                     cockpit_length / 2
                     + (panels_longitudinal / 2 - 1) * panel_width
                     + aka_width / 2,
@@ -466,7 +462,13 @@ def mirror(side):
         FreeCAD.Rotation(Base.Vector(1, 0, 0), 90))
     set_color(ama_body_lower, color_bottom)
 
-    ama_cone_upper = side.newObject("Part::Feature", "Ama cone (pvc)")
+    ama_body_foam = side.newObject("Part::Feature", "Ama_Body_Foam (foam)")
+    ama_body_foam.Shape = Part.makeCylinder(ama_diameter / 2 - ama_thickness, ama_length / 2 - ama_cone_length)
+    ama_body_foam.Placement = FreeCAD.Placement(
+        Base.Vector(0, ama_length / 2 - ama_cone_length, ama_diameter / 2),
+        FreeCAD.Rotation(Base.Vector(1, 0, 0), 90))
+        
+    ama_cone_upper = side.newObject("Part::Feature", "Ama_Cone_Upper (pvc)")
     ama_cone_upper.Shape = hollow_cone(ama_diameter,
                                        ama_thickness,
                                        ama_cone_length)
@@ -476,7 +478,7 @@ def mirror(side):
         FreeCAD.Rotation(Base.Vector(1, 0, 0), 270))
     set_color(ama_cone_upper, color_ama)
 
-    ama_cone_lower = side.newObject("Part::Feature", "Ama cone (pvc)")
+    ama_cone_lower = side.newObject("Part::Feature", "Ama_Cone_Lower (pvc)")
     ama_cone_lower.Shape = hollow_cone(ama_diameter,
                                        ama_thickness,
                                        ama_cone_length)
@@ -486,3 +488,9 @@ def mirror(side):
         FreeCAD.Rotation(Base.Vector(1, 0, 0), 270))
     set_color(ama_cone_lower, color_bottom)
 
+    ama_cone_foam = side.newObject("Part::Feature", "Ama_Cone_Foam (foam)")
+    ama_cone_foam.Shape = Part.makeCone(ama_diameter / 2 - ama_thickness, 0, ama_thickness)
+    ama_cone_foam.Placement = FreeCAD.Placement(
+        Base.Vector(0, ama_length / 2 - ama_cone_length, ama_diameter / 2),
+        FreeCAD.Rotation(Base.Vector(1, 0, 0), 270))
+        

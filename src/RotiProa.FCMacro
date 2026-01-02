@@ -166,7 +166,7 @@ rig_biru = doc.addObject("App::Part", "Rig: Biru")
 rig(rig_biru, sail_angle=sail_angle_biru,
     sail_camber=sail_camber_biru)
 rig_biru.Placement = FreeCAD.Placement(
-    Base.Vector(vaka_displacement, mast_distance_from_center, sole_thickness),
+    Base.Vector(vaka_x_offset, mast_distance_from_center, sole_thickness),
     FreeCAD.Rotation(Base.Vector(0, 0, 1), rig_rotation_biru))
 
 # rig_kuning with specified rotation and camber
@@ -174,7 +174,7 @@ rig_biru.Placement = FreeCAD.Placement(
 rig_kuning = doc.addObject("App::Part", "Rig: Kuning")
 rig(rig_kuning, sail_angle=sail_angle_kuning)
 rig_kuning.Placement = FreeCAD.Placement(
-    Base.Vector(vaka_displacement, - mast_distance_from_center, sole_thickness),
+    Base.Vector(vaka_x_offset, - mast_distance_from_center, sole_thickness),
     FreeCAD.Rotation(Base.Vector(0, 0, 1), rig_rotation_kuning))
 
 # rudder: each rudder (biru and kuning) is
@@ -184,27 +184,27 @@ rig_kuning.Placement = FreeCAD.Placement(
 # rudder_biru with rudder_rotation_biru
 
 rudder_biru = doc.addObject("App::Part", "Rudder: Biru")
-rudder(rudder_biru)
+rudder(rudder_biru, rudder_raised_biru)
 rudder_biru.Placement = FreeCAD.Placement(
-    Base.Vector(vaka_displacement - vaka_width / 2
+    Base.Vector(vaka_x_offset - vaka_width / 2
                 - rudder_distance_from_vaka,
                 cockpit_length / 2
                 + (panels_longitudinal / 2 - 1) * panel_width
                 + aka_width / 2,
-                - rudder_below_bottom),
+                0),
     FreeCAD.Rotation(Base.Vector(0, 0, 1), rudder_rotation_biru))
 
 # rudder_kuning with rudder_rotation_kuning
 
 rudder_kuning = doc.addObject("App::Part", "Rudder: Kuning")
-rudder(rudder_kuning)
+rudder(rudder_kuning, rudder_raised_kuning)
 rudder_kuning.Placement = FreeCAD.Placement(
-    Base.Vector(vaka_displacement - vaka_width / 2
+    Base.Vector(vaka_x_offset - vaka_width / 2
                 - rudder_distance_from_vaka,
                 - cockpit_length / 2
                 - (panels_longitudinal / 2 - 1) * panel_width
                 - aka_width / 2,
-                - rudder_below_bottom),
+                0),
     FreeCAD.Rotation(Base.Vector(0, 0, 1), rudder_rotation_kuning))
 
 # boat: central unmirrored components: hull, sole, etc

@@ -95,9 +95,9 @@ brace_lower_offset = 400  # distance from ama to lower corners of X
 pillar_brace_vertical_offset = 500  # vertical distance down pillar from aka base level
 
 # distance from x=0 (center line of ama) to center line of vaka
-vaka_displacement = (- pillar_width / 2
-                     + panel_length * panels_transversal
-                     + deck_width / 2)
+vaka_x_offset = (- pillar_width / 2
+                 + panel_length * panels_transversal
+                 + deck_width / 2)
 
 mast_diameter = 80
 mast_thickness = 5
@@ -144,9 +144,38 @@ sail_thickness = 2  # thin membrane
 # rudder
 
 rudder_post_diameter = 50
-rudder_head_length = 200
 rudder_blade_length = 400
 rudder_blade_height = 400
+rudder_blade_thickness = 5
 rudder_distance_from_vaka = 100
 rudder_below_bottom = 400
 
+rudder_bearing_block_diameter = 80
+rudder_bearing_block_height = stringer_width
+rudder_aka_mount_pin_diameter = 10
+rudder_aka_mount_pin_length = 150
+
+rudder_vaka_mount_length = 800
+rudder_vaka_mount_angle = 5
+rudder_vaka_mount_base_level = (bottom_height + freeboard) / 2
+rudder_vaka_backing_plate_thickness = 10
+
+rudder_ribs = 5
+rudder_rim = 30
+rudder_rib_diameter = 10
+rudder_rib_length = rudder_blade_length - 50
+
+tiller_width = stringer_width
+tiller_thickness = stringer_thickness
+tiller_length = 490
+tiller_angle = 7
+
+motor_backing_plate_length = 300
+motor_backing_plate_height = 300
+motor_backing_plate_thickness = 10
+motor_backing_plate_above_sole = 600
+
+side_board_plate_length = 300
+side_board_plate_height = 300
+side_board_plate_thickness = 10
+side_board_plate_above_sole = 600

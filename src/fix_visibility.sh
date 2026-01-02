@@ -10,7 +10,7 @@ FCSTD_FILE="$1"
 FREECAD="${2:-/Applications/FreeCAD.app/Contents/MacOS/FreeCAD}"
 
 # Create a temporary Python script
-TEMP_SCRIPT=$(mktemp /tmp/freecad_fix_XXXXX.py)
+TEMP_SCRIPT=$(mktemp /tmp/freecad_fix_XXXXXX.py)
 
 cat > "$TEMP_SCRIPT" << 'EOF'
 import FreeCAD

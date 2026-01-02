@@ -6,10 +6,10 @@ sail_angle_kuning = -45
 rig_rotation_biru = 90
 rig_rotation_kuning = 90
 rudder_rotation_biru = 0
-rudder_raised_biru = True
 rudder_rotation_kuning = 0
-rudder_raised_kuning = False
+rudder_raised_biru = True
+rudder_raised_kuning = True
 
-reefing_percentage = 0
+reefing_percentage = 100
 
 
