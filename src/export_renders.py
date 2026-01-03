@@ -87,12 +87,22 @@ def export_renders(fcstd_path, output_dir):
     return True
 
 if __name__ == "__main__":
+    # FreeCAD in console mode passes arguments differently
+    # sys.argv looks like: ['freecadcmd', 'export_renders.py', 'input.FCStd', 'output_dir']
+    # We need the last two arguments
+    
     if len(sys.argv) < 3:
         print("Usage: freecadcmd export_renders.py <input.FCStd> <output_dir>")
+        print(f"Got args: {sys.argv}")
         sys.exit(1)
     
-    fcstd_path = sys.argv[1]
-    output_dir = sys.argv[2]
+    # Take the last two arguments
+    fcstd_path = sys.argv[-2]
+    output_dir = sys.argv[-1]
+    
+    print(f"Script: {sys.argv[0] if len(sys.argv) > 0 else 'unknown'}")
+    print(f"Input file: {fcstd_path}")
+    print(f"Output dir: {output_dir}")
     
     success = export_renders(fcstd_path, output_dir)
     
