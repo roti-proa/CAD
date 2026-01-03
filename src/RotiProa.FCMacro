@@ -236,22 +236,59 @@ os.makedirs(output_dir, exist_ok=True)
 
 output_path = os.path.join(output_dir, f"RotiProa_{boat_name}_{configuration_name}.FCStd")
 
-# In console mode, we need to initialize the GUI document to save view properties
+# In console mode, we need to initialize the GUI to save view properties
 # This ensures objects will be visible when loaded in GUI mode
+# Uses the technique from: https://forum.freecad.org/viewtopic.php?t=101183
 if not FreeCAD.GuiUp:
     try:
-        import FreeCADGui
-        # Create GUI document
-        FreeCADGui.getDocument(doc.Name)
-        print("Created GUI document structure for visibility")
+        import FreeCADGui as Gui
+        from PySide import QtGui
         
-        # Now set all objects visible
+        print("Initializing headless GUI for visibility...")
+        
+        # Init Qt (if not already initialized)
+        try:
+            QtGui.QApplication()
+        except RuntimeError:
+            # QApplication already exists
+            pass
+        
+        # Enable Gui functions without actually showing GUI
+        Gui.showMainWindow()
+        
+        # Destroy the window to prevent it from displaying
+        # Note: This causes segfault on macOS, so skip it there
+        import platform
+        if platform.system() != 'Darwin':  # Not macOS
+            Gui.getMainWindow().destroy()
+        else:
+            # On macOS, hide instead of destroy to avoid segfault
+            Gui.getMainWindow().hide()
+        
+        # Disable thumbnails to avoid warnings
+        FreeCAD.ParamGet('User parameter:BaseApp/Preferences/Document').SetBool('SaveThumbnail', False)
+        
+        print("Headless GUI initialized")
+        
+        # Now we can use Gui functions to set visibility and camera
+        view = Gui.activeView()
+        if view:
+            view.setAnimationEnabled(False)
+            view.viewIsometric()
+            view.fitAll()
+            print("Set camera view")
+        
+        # Set all objects visible
         def make_all_visible(obj_list):
             """Recursively make all objects and their children visible"""
             for obj in obj_list:
                 try:
                     if hasattr(obj, 'ViewObject') and obj.ViewObject:
-                        obj.ViewObject.Visibility = True
+                        # Hide Origin objects (coordinate system helpers)
+                        if 'Origin' in obj.Name or obj.TypeId == 'App::Origin':
+                            obj.ViewObject.Visibility = False
+                        else:
+                            obj.ViewObject.Visibility = True
                 except:
                     pass
                 # Recurse into groups/parts
@@ -261,8 +298,14 @@ if not FreeCAD.GuiUp:
         # Apply to all objects
         make_all_visible(doc.Objects)
         print("Set all objects visible")
+        
+        # Update GUI to ensure all changes are applied
+        Gui.updateGui()
+        
     except Exception as e:
-        print(f"Could not set visibility (this is OK): {e}")
+        print(f"Could not set visibility: {e}")
+        import traceback
+        traceback.print_exc()
 
 # Save
 doc.saveAs(output_path)
@@ -287,6 +330,11 @@ if FreeCAD.GuiUp:
 #set_below_view()
 
 # Exit console mode cleanly (but not GUI mode)
+# Note: After destroying the GUI window, we need to exit carefully to avoid segfault
 if not FreeCAD.GuiUp:
-    sys.exit(0)
+    # Close the document before exiting
+    FreeCAD.closeDocument(doc.Name)
+    # Use os._exit instead of sys.exit to avoid cleanup issues
+    import os
+    os._exit(0)
 

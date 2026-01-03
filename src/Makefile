@@ -88,9 +88,13 @@ export: build $(EXPORT_DIR)
 .PHONY: render
 render: build $(RENDER_DIR)
 	@echo "Rendering images from $(FCSTD)..."
-	@if [ "$(UNAME)" = "Darwin" ]; then \
+	@echo "UNAME=$(UNAME)"
+	@echo "Running on platform: $(UNAME)"
+	if [ "$(UNAME)" = "Darwin" ]; then \
+		echo "Executing: $(SRC_DIR)/export_renders_mac.sh"; \
 		$(SRC_DIR)/export_renders_mac.sh "$(FCSTD)" "$(RENDER_DIR)" "$(FREECAD_APP)"; \
 	else \
+		echo "Executing: $(FREECAD_CMD) $(SRC_DIR)/export_renders.py"; \
 		$(FREECAD_CMD) $(SRC_DIR)/export_renders.py "$(FCSTD)" "$(RENDER_DIR)"; \
 	fi
 	@echo "Render complete!"

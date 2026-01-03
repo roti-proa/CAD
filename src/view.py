@@ -9,7 +9,7 @@ doc = FreeCAD.ActiveDocument
 cabin_cam = doc.addObject("Part::Feature", "Cabin_Cam")
 cabin_cam.Shape = Part.makeSphere(10)  # Small 50mm sphere
 cabin_cam.Placement = FreeCAD.Placement(
-    FreeCAD.Base.Vector(vaka_displacement, 0, 600),  # Center of cockpit, quite low
+    FreeCAD.Base.Vector(vaka_x_offset, 0, 600),  # Center of cockpit, quite low
     FreeCAD.Rotation(FreeCAD.Base.Vector(0, 0, 0), 0))
 # Make it semi-transparent so it doesn't obstruct view
 cabin_cam.ViewObject.Transparency = 80
@@ -19,7 +19,7 @@ cabin_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
 deck_cam = doc.addObject("Part::Feature", "Deck_Cam")
 deck_cam.Shape = Part.makeSphere(10)  # Small 50mm sphere
 deck_cam.Placement = FreeCAD.Placement(
-    FreeCAD.Base.Vector(vaka_displacement, 0, 1700),  # eye level standing in cockpit
+    FreeCAD.Base.Vector(vaka_x_offset, 0, 1700),  # eye level standing in cockpit
     FreeCAD.Rotation(FreeCAD.Base.Vector(0, 0, 0), 0))
 # Make it semi-transparent so it doesn't obstruct view
 deck_cam.ViewObject.Transparency = 80
@@ -29,7 +29,7 @@ deck_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
 mast_cam = doc.addObject("Part::Feature", "Mast_Cam")
 mast_cam.Shape = Part.makeSphere(10)  # Small 50mm sphere
 mast_cam.Placement = FreeCAD.Placement(
-    FreeCAD.Base.Vector(vaka_displacement, 0, mast_height),  # top of mast
+    FreeCAD.Base.Vector(vaka_x_offset, 0, mast_height),  # top of mast
     FreeCAD.Rotation(FreeCAD.Base.Vector(0, 0, 0), 0))
 # Make it semi-transparent so it doesn't obstruct view
 mast_cam.ViewObject.Transparency = 80
@@ -39,7 +39,7 @@ mast_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
 below_cam = doc.addObject("Part::Feature", "Below_Cam")
 below_cam.Shape = Part.makeSphere(10)  # Small 50mm sphere
 below_cam.Placement = FreeCAD.Placement(
-    FreeCAD.Base.Vector(vaka_displacement - 1500, 0, 600), 
+    FreeCAD.Base.Vector(vaka_x_offset - 1500, 0, 600), 
     FreeCAD.Rotation(FreeCAD.Base.Vector(0, 0, 0), 0))
 # Make it semi-transparent so it doesn't obstruct view
 below_cam.ViewObject.Transparency = 80
@@ -53,7 +53,7 @@ def set_interior_view():
     view.setCameraType("Perspective")
     view.setViewDirection((0.26164761185646057, 0.9641122221946716, 0.04503464326262474))
     view.viewPosition(FreeCAD.Placement(
-        FreeCAD.Base.Vector(vaka_displacement,-347.47,574.482),
+        FreeCAD.Base.Vector(vaka_x_offset,-347.47,574.482),
         FreeCAD.Rotation(-15.0776,0.0,90)))
 
 def set_cockpit_view():
@@ -64,7 +64,7 @@ def set_cockpit_view():
     view.setCameraType("Perspective")
     view.setViewDirection((0.26164761185646057, 0.9641122221946716, 0.04503464326262474))
     view.viewPosition(FreeCAD.Placement(
-        FreeCAD.Base.Vector(vaka_displacement,-347.47,1700),
+        FreeCAD.Base.Vector(vaka_x_offset,-347.47,1700),
         FreeCAD.Rotation(-15.0776,0.0,90)))
     
 def set_mast_view():
@@ -75,7 +75,7 @@ def set_mast_view():
     view.setCameraType("Perspective")
     view.setViewDirection((0.26164761185646057, 0.9641122221946716, 0.04503464326262474))
     view.viewPosition(FreeCAD.Placement(
-        FreeCAD.Base.Vector(vaka_displacement,-347.47,mast_height),
+        FreeCAD.Base.Vector(vaka_x_offset,-347.47,mast_height),
         FreeCAD.Rotation(-15.0776,0.0,90)))
     
 def set_below_view():
@@ -86,7 +86,7 @@ def set_below_view():
     view.setCameraType("Perspective")
     view.setViewDirection((0.26164761185646057, 0.9641122221946716, 0.04503464326262474))
     view.viewPosition(FreeCAD.Placement(
-        FreeCAD.Base.Vector(vaka_displacement - 1500, -350.0, freeboard / 2),
+        FreeCAD.Base.Vector(vaka_x_offset - 1500, -350.0, freeboard / 2),
         FreeCAD.Rotation(-15.0776,0.0,90)))
     
 def set_sail_view():
