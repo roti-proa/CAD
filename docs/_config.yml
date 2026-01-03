@@ -1,0 +1,10 @@
+title: Roti Proa
+description: Solar-electric proa designs and documentation
+theme: jekyll-theme-cayman
+
+# Build settings
+markdown: kramdown
+
+# Include the renders directory
+include:
+  - output/renders

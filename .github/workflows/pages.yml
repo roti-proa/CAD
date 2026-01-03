@@ -59,6 +59,11 @@ jobs:
         run: |
           make render-all
       
+      - name: Copy renders to docs folder
+        run: |
+          mkdir -p docs/renders
+          cp -r output/renders/* docs/renders/ || echo "No renders to copy"
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
