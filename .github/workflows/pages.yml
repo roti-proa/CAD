@@ -76,7 +76,7 @@ jobs:
         run: |
           mkdir -p docs/downloads
           cp output_designs/*.FCStd docs/downloads/ || echo "No designs to copy"
-	  
+        
       - name: Generate statistics YAML files
         run: |
           make stats-all
