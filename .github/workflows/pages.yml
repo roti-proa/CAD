@@ -71,6 +71,10 @@ jobs:
       - name: Generate statistics YAML files
         run: |
           make stats-yaml
+          echo "=== Generated YAML files ==="
+          ls -la docs/_data/
+          echo "=== Sample YAML content ==="
+          head -15 docs/_data/rp2_closehaul.yml || echo "File not found"
         
       - name: Export renders from all models
         run: |
@@ -89,6 +93,15 @@ jobs:
         with:
           source: ./docs
           destination: ./_site
+      
+      - name: Verify Jekyll site build
+        run: |
+          echo "=== Jekyll site structure ==="
+          ls -la _site/
+          echo "=== Checking for data directory in source ==="
+          ls -la docs/_data/ || echo "No _data directory"
+          echo "=== Sample page content (should show data values, not liquid tags) ==="
+          grep -A5 "Overall Length" _site/rp2.html || echo "Page not found"
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
