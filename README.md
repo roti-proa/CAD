@@ -8,7 +8,7 @@ All components are specified in software, in `src` as the _single source of trut
 - Parameters: The boat is fully parameterized; the files `src/boats/RP*.py` let you choose the numbers of solar panels and the size of all components.
 - Configurations: Moving parts such as rig, sails, rudders etc can be configured in the files `src/configurations/*.py`, for example `CloseHaul.py`.
 - Mirroring: Roti Proa has a transversal symmetry axis. Most components are described in file `mirror.py` and automatically mirrored in the generated model.
-- Rotation: Some parts such as the rigs and rudder can be rotated, see file `rotation.py`. The rotation angles are specified 
+- Rotation: Some parts such as the rigs and rudder can be rotated or moved (see file `rotation.py`) in the configuration files.
 
 ## Getting Started
 
@@ -20,12 +20,14 @@ All components are specified in software, in `src` as the _single source of trut
 
 4. Macro > Macros, then choose the file `src/RotiProa.FCMacro`
 
-5. You should see Roti Proa II in the FreeCAD view
+5. You should see `RotiProa_RP2_CloseHaul` in the FreeCAD view.
 
 ## Playing with the FreeCAD GUI
 
-- Play with `src/boats/RP2.py`: change parameters such as the number of solar panels, length of the boat, etc and rerun the macro to see the result.
-- Play with `src/boats/CloseHaul.py`: change the sail settings and rerun the macro to see the result.
+Change the boat specifications and rerun the macro:
+- Change `src/boats/RP2.py` to play with the number of solar panels, length of the boat etc.
+- Change `src/boats/CloseHaul.py` to play with the sail settings, rudder position etc.
+- Add or change boat features by editing `src/central.py`, `src/mirror.py`, or `src/rotation.py`.
 
 ## Generating `FCStd` files from command line
 

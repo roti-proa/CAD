@@ -103,17 +103,40 @@ def generate_yaml(fcstd_path, output_path):
     total_mass = sum(material_weights.values())
     total_volume = sum(material_volumes.values())
     
+    # Try to get dimensions from parameters module
+    try:
+        from parameters import LOA, beam, cockpit_length
+        loa_m = LOA / 1000.0
+        beam_m = beam / 1000.0
+        cockpit_length_m = cockpit_length / 1000.0
+    except (ImportError, AttributeError) as e:
+        print(f"  Warning: Could not import dimensions: {e}")
+        loa_m = None
+        beam_m = None
+        cockpit_length_m = None
+    
     # Create YAML content
     yaml_lines = [
         f"# Auto-generated statistics for {boat} - {config}",
         f"boat: {boat}",
         f"configuration: {config}",
+    ]
+    
+    # Add dimensions if available
+    if loa_m is not None:
+        yaml_lines.append(f"LOA_m: {loa_m:.1f}")
+    if beam_m is not None:
+        yaml_lines.append(f"beam_m: {beam_m:.1f}")
+    if cockpit_length_m is not None:
+        yaml_lines.append(f"cockpit_length_m: {cockpit_length_m:.2f}")
+    
+    yaml_lines.extend([
         f"total_mass_kg: {total_mass:.2f}",
         f"total_volume_liters: {total_volume:.2f}",
         f"displacement_saltwater_kg: {total_volume * 1.025:.2f}",
         "",
         "materials:"
-    ]
+    ])
     
     # Add materials
     for mat_name in sorted(material_weights.keys()):
@@ -142,6 +165,10 @@ def generate_yaml(fcstd_path, output_path):
     
     print(f"✓ Generated {output_path}")
     print(f"  Total mass: {total_mass:.2f} kg")
+    if loa_m:
+        print(f"  LOA: {loa_m:.1f} m")
+    if beam_m:
+        print(f"  Beam: {beam_m:.1f} m")
     print(f"  Materials: {len(material_weights)}")
     print(f"  Components: {len(all_components)}")
     
@@ -167,4 +194,3 @@ if __name__ == "__main__":
         sys.exit(1)
     
     generate_yaml(fcstd, output)
-
