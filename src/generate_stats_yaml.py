@@ -17,6 +17,7 @@ try:
     import FreeCAD as App
     import stats
     from material import material
+    from parameters import *
 except ImportError as e:
     print(f"ERROR: {e}")
     print("This script must be run with FreeCAD's Python")
@@ -103,18 +104,6 @@ def generate_yaml(fcstd_path, output_path):
     total_mass = sum(material_weights.values())
     total_volume = sum(material_volumes.values())
     
-    # Try to get dimensions from parameters module
-    try:
-        from parameters import LOA, beam, cockpit_length
-        loa_m = LOA / 1000.0
-        beam_m = beam / 1000.0
-        cockpit_length_m = cockpit_length / 1000.0
-    except (ImportError, AttributeError) as e:
-        print(f"  Warning: Could not import dimensions: {e}")
-        loa_m = None
-        beam_m = None
-        cockpit_length_m = None
-    
     # Create YAML content
     yaml_lines = [
         f"# Auto-generated statistics for {boat} - {config}",
@@ -122,15 +111,14 @@ def generate_yaml(fcstd_path, output_path):
         f"configuration: {config}",
     ]
     
-    # Add dimensions if available
-    if loa_m is not None:
-        yaml_lines.append(f"LOA_m: {loa_m:.1f}")
-    if beam_m is not None:
-        yaml_lines.append(f"beam_m: {beam_m:.1f}")
-    if cockpit_length_m is not None:
-        yaml_lines.append(f"cockpit_length_m: {cockpit_length_m:.2f}")
+    loa_m = vaka_length / 1000.0
+    beam_m = beam / 1000.0
+    cockpit_length_m = cockpit_length / 1000.0
     
     yaml_lines.extend([
+        f"LOA_m: {loa_m:.1f}",
+        f"beam_m: {beam_m:.1f}",
+        f"cockpit_length_m: {cockpit_length_m:.2f}",
         f"total_mass_kg: {total_mass:.2f}",
         f"total_volume_liters: {total_volume:.2f}",
         f"displacement_saltwater_kg: {total_volume * 1.025:.2f}",
