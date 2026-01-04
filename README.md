@@ -3,7 +3,7 @@
 ## About
 
 The solar proa is a novel boat design for carbon-neutral
-small-scale tropical maritime transport and exploration.
+small-scale tropical maritime transport, exploration, and tourism.
 These boats combine traditional Southeast Asian and Polynesian
 boat designs and rigs with solar power and modern materials.
 More on solar proas is available at the website
@@ -37,7 +37,7 @@ _single source of truth_. Features include:
 
 5. You should see `SolarProa_RP2_CloseHaul` in the FreeCAD view.
 
-## Playing with the FreeCAD GUI
+## Playing with the FreeCAD Graphical User Interface (GUI)
 
 Change the boat specifications and rerun the macro:
 - Change `src/boats/RP2.py` to play with the number of solar panels, length of the boat etc.
@@ -61,11 +61,15 @@ The generated files are placed in the folder `output`, for example:
 output/SolarProa_RP2_CloseHaul.FCStd
 ```
 
+## Continuous Integration/Continuous Deployment (CICD)
+
+The issue: when we have an idea for an improvement of the design, we would need to redo all changes in all affected artifacts: the designs, renderings, and websites. CICD takes care of that but automatically regenerating the artifacts. This is done locally, using the `make` facility and on the github server using a workflow. The workflow makes sure that the [solarproa.org](https://solarproa.org) always has the latest versions.
+
 ## Under the hood
 
 Crucial for the CICD approach to CAD using FreeCAD is:
 - FreeCAD's [macros](https://wiki.freecad.org/Macros) feature
-- the ability to run FreeCAD headless, using `freecadcmd` on Linux and using `--console` on Mac
+- the ability to run FreeCAD headlessly (with GUI), using `freecadcmd` on Linux and using `--console` on Mac
 - this [observation](https://forum.freecad.org/viewtopic.php?p=857226#p857226) by FreeCAD user [`jcsahnwaldt`](https://forum.freecad.org/memberlist.php?mode=viewprofile&u=85580&sid=a9af5bd37412a3771f25378b4c027a2c) to use GUI features in headless FreeCAD with `PySide.QtGui`
 
 Some design decisions:
@@ -76,4 +80,4 @@ Some design decisions:
 
 ## Further development
 
-Let's explore what output formats and we can generate and what tools are available to get the most out of our FreeCAD designs. Any contributions are welcome.
+Let's explore what output formats we can generate and what tools are available to get the most out of our FreeCAD designs. Any contributions are welcome.

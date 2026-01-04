@@ -119,9 +119,8 @@ stats-all: $(DESIGN_DIR)
 	@for fcstd in $(DESIGN_DIR)/*.FCStd; do \
 		if [ -f "$$fcstd" ]; then \
 			base=$$(basename "$$fcstd" .FCStd); \
-			parts=($$(echo "$$base" | tr '_' ' ')); \
-			boat=$${parts[1]}; \
-			config=$${parts[2]}; \
+			boat=$$(echo "$$base" | cut -d'_' -f2); \
+			config=$$(echo "$$base" | cut -d'_' -f3); \
 			echo "Processing $$boat $$config..."; \
 			$(MAKE) stats-only BOAT=$$boat CONFIG=$$config || true; \
 		fi \
@@ -165,9 +164,8 @@ render-all: $(RENDER_DIR)
 	@for fcstd in $(DESIGN_DIR)/*.FCStd; do \
 		if [ -f "$$fcstd" ]; then \
 			base=$$(basename "$$fcstd" .FCStd); \
-			parts=($$(echo "$$base" | tr '_' ' ')); \
-			boat=$${parts[1]}; \
-			config=$${parts[2]}; \
+			boat=$$(echo "$$base" | cut -d'_' -f2); \
+			config=$$(echo "$$base" | cut -d'_' -f3); \
 			echo "Processing $$boat $$config..."; \
 			$(MAKE) render-only BOAT=$$boat CONFIG=$$config || true; \
 		fi \
@@ -216,21 +214,19 @@ help:
 	@echo "Discovered configurations: $(CONFIGS)"
 	@echo ""
 	@echo "Main targets:"
-	@echo "  make             - Build ALL boats with ALL configurations"
+	@echo "  make             - Build ALL boats with ALL configurations and generate all stats and renderings"
 	@echo "  make all         - Same as above"
-	@echo "  make build       - Build single boat+config (BOAT=$(BOAT) CONFIG=$(CONFIG))"
-	@echo "  make render      - Export render images from current build"
-	@echo "  make render-all  - Export render images from ALL FCStd files"
+	@echo "  make design      - Build single boat+config (BOAT=$(BOAT) CONFIG=$(CONFIG))"
+	@echo "  make design-all  - Buid ALL boats with ALL configurations"
+	@echo "  make render      - Export render images from (BOAT=$(BOAT) CONFIG=$(CONFIG))"
+	@echo "  make render-all  - Export render images from ALL current FCStd files"
+	@echo "  make stats       - Export statistics yaml file from (BOAT=$(BOAT) CONFIG=$(CONFIG))"
+	@echo "  make render-all  - Export statistics yaml file(s) from ALL current FCStd files"
 	@echo ""
 	@echo "Boat-specific targets:"
+	@echo "  make rp1         - Build RP1 with all configurations"
 	@echo "  make rp2         - Build RP2 with all configurations"
 	@echo "  make rp3         - Build RP3 with all configurations"
-	@echo ""
-	@echo "Configuration-specific targets:"
-	@echo "  make closehaul   - Build all boats in CloseHaul configuration"
-	@echo "  make beamreach   - Build all boats in BeamReach configuration"
-	@echo "  make broadreach  - Build all boats in BroadReach configuration"
-	@echo "  make goosewing   - Build all boats in GooseWing configuration"
 	@echo ""
 	@echo "Utility targets:"
 	@echo "  make clean       - Remove all generated files"
@@ -239,8 +235,8 @@ help:
 	@echo ""
 	@echo "Examples:"
 	@echo "  make design BOAT=RP2 CONFIG=BeamReach"
+	@echo "  make stats-all"
 	@echo "  make rp2"
-	@echo "  make closehaul"
 	@echo ""
 	@echo "FreeCAD: $(FREECAD)"
 
