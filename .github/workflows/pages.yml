@@ -83,7 +83,7 @@ jobs:
       - name: Copy renders to docs folder
         run: |
           mkdir -p docs/renders
-          cp -r output/renders/* docs/renders/ || echo "No renders to copy"
+          cp -r output_renders/* docs/renders/ || echo "No renders to copy"
       
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
