@@ -22,6 +22,8 @@ SRC_DIR := src
 DESIGN_DIR := output_designs
 RENDER_DIR := output_renders
 EXPORT_DIR := output_exports
+DOCS_DIR := docs
+
 # Discover all boats and configurations dynamically
 BOATS := $(basename $(notdir $(wildcard $(SRC_DIR)/boats/*.py)))
 CONFIGS := $(basename $(notdir $(wildcard $(SRC_DIR)/configurations/*.py)))
@@ -99,7 +101,7 @@ render: build $(RENDER_DIR)
 .PHONY: stats-yaml
 stats-yaml: $(DESIGN_DIR)
 	@echo "Generating YAML statistics for Jekyll..."
-	@mkdir -p docs/_data
+	@mkdir -p $(DOCS_DIR)/_data
 	@for fcstd in $(DESIGN_DIR)/*.FCStd; do \
 		if [ -f "$$fcstd" ]; then \
 			base=$$(basename "$$fcstd" .FCStd); \
@@ -108,9 +110,9 @@ stats-yaml: $(DESIGN_DIR)
 			if [ "$(UNAME)" = "Darwin" ]; then \
 				PYTHONPATH=/Applications/FreeCAD.app/Contents/Resources/lib:/Applications/FreeCAD.app/Contents/Resources/Mod \
 				DYLD_LIBRARY_PATH=/Applications/FreeCAD.app/Contents/Frameworks:/Applications/FreeCAD.app/Contents/Resources/lib \
-				/Applications/FreeCAD.app/Contents/Resources/bin/python $(SRC_DIR)/generate_stats_yaml.py "$$fcstd" "docs/_data/$${yaml_name}.yml" || true; \
+				/Applications/FreeCAD.app/Contents/Resources/bin/python $(SRC_DIR)/generate_stats_yaml.py "$$fcstd" $(DOCS_DIR)/"_data/$${yaml_name}.yml" || true; \
 			else \
-				FCSTD_FILE="$$fcstd" OUTPUT_YAML="docs/_data/$${yaml_name}.yml" freecad-python $(SRC_DIR)/generate_stats_yaml.py || true; \
+				FCSTD_FILE="$$fcstd" OUTPUT_YAML=$(DOCS_DIR)/"_data/$${yaml_name}.yml" freecad-python $(SRC_DIR)/generate_stats_yaml.py || true; \
 			fi \
 		fi \
 	done
@@ -152,8 +154,16 @@ clean:
 	rm -rf $(RENDER_DIR)
 	@echo "Cleaning export files..."
 	rm -rf $(EXPORT_DIR)
+	@echo "Cleaning data files..."
+	rm -rf $(DOCS_DIR)/_data
+	@echo "Cleaning jekyll site files..."
+	rm -rf $(DOCS_DIR)/_site
 	@echo "Removing backup files..."
-	rm -rf *~
+	find . -name '*~' -delete
+	@echo "Removing Python cache..."
+	find . -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
+	find . -name '*.pyc' -delete
+	find . -name '*.pyo' -delete
 	@echo "Clean complete!"
 
 # Build specific boats with all configurations
@@ -239,4 +249,12 @@ check:
 localhost:
 	@echo "Serving website in localhost..."
 	cd docs; bundle exec jekyll serve
+
+# Make zip file with just the git files
+.PHONY: zip
+zip: 
+	@echo "Make zip file with just the git files"
+	git archive -o ../CAD-clean.zip HEAD
+
+
 
