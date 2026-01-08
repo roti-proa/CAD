@@ -68,31 +68,14 @@ jobs:
         run: |
           make design-all
 
-      - name: Generate downloads YAML
-        run: |
-          make downloads-yaml
-
-      - name: Copy CAD models to docs
-        run: |
-          mkdir -p docs/downloads
-          cp output_designs/*.FCStd docs/downloads/ || echo "No designs to copy"
-        
-      - name: Generate statistics YAML files
-        run: |
-          make stats-all
-          echo "=== Generated YAML files ==="
-          ls -la docs/_data/
-          echo "=== Sample YAML content ==="
-          head -15 docs/_data/rp2_closehaul.yml || echo "File not found"
-        
       - name: Export renders from all models
         run: |
           make render-all
       
       - name: Copy renders to docs folder
         run: |
-          mkdir -p docs/renders
-          cp -r output_renders/* docs/renders/ || echo "No renders to copy"
+          mkdir -p docs/artifacts
+          cp -r artifacts/* docs/artifacts/ || echo "Nothing to copy"
       
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
