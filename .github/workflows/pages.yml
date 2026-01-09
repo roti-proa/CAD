@@ -75,6 +75,19 @@ jobs:
       - name: Validate all configurations
         run: |
           make validate-all
+      
+      - name: Verify validation artifacts were created
+        run: |
+          echo "=== Checking for aggregate files ==="
+          if ls artifacts/*.aggregate.json 1> /dev/null 2>&1; then
+            echo "Found $(ls artifacts/*.aggregate.json | wc -l) aggregate files:"
+            ls -lh artifacts/*.aggregate.json
+          else
+            echo "ERROR: No aggregate files found! Validation may have failed."
+            echo "Checking for design files:"
+            ls -lh artifacts/*.design.FCStd || echo "No design files either"
+            exit 1
+          fi
 
       - name: Export renders from all models
         run: |
@@ -88,6 +101,7 @@ jobs:
         run: |
           mkdir -p docs/_data
           # Copy JSON files and rename with Jekyll-friendly names (dots to underscores)
+          count=0
           for file in artifacts/*.aggregate.json; do
             if [ -f "$file" ]; then
               basename=$(basename "$file" .aggregate.json)
@@ -95,6 +109,32 @@ jobs:
               newname=$(echo "$basename" | tr '.' '_')
               cp "$file" "docs/_data/${newname}.json"
               echo "Copied $file -> docs/_data/${newname}.json"
+              count=$((count + 1))
+            fi
+          done
+          echo "Total aggregate files copied: $count"
+          if [ $count -eq 0 ]; then
+            echo "ERROR: No aggregate files were copied!"
+            exit 1
+          fi
+      
+      - name: Verify data files contain parameters
+        run: |
+          echo "=== Verifying data file structure ==="
+          for file in docs/_data/*.json; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              # Check if file has parameters object
+              if grep -q '"parameters"' "$file"; then
+                # Try to extract a sample value
+                if grep -q '"vaka_length"' "$file"; then
+                  echo "  ✓ Contains parameters with vaka_length"
+                else
+                  echo "  ⚠ Parameters present but vaka_length missing"
+                fi
+              else
+                echo "  ✗ ERROR: No parameters object found!"
+              fi
             fi
           done
       
