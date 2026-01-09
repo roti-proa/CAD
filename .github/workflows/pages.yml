@@ -78,12 +78,12 @@ jobs:
       
       - name: Verify validation artifacts were created
         run: |
-          echo "=== Checking for aggregate files ==="
-          if ls artifacts/*.aggregate.json 1> /dev/null 2>&1; then
-            echo "Found $(ls artifacts/*.aggregate.json | wc -l) aggregate files:"
-            ls -lh artifacts/*.aggregate.json
+          echo "=== Checking for validate files ==="
+          if ls artifacts/*.validate.json 1> /dev/null 2>&1; then
+            echo "Found $(ls artifacts/*.validate.json | wc -l) validate files:"
+            ls -lh artifacts/*.validate.json
           else
-            echo "ERROR: No aggregate files found! Validation may have failed."
+            echo "ERROR: No validate files found! Validation may have failed."
             echo "Checking for design files:"
             ls -lh artifacts/*.design.FCStd || echo "No design files either"
             exit 1
@@ -97,14 +97,14 @@ jobs:
         run: |
           python3 src/design/generate_downloads_yaml.py
       
-      - name: Copy aggregate files to docs folder
+      - name: Copy validate files to docs folder
         run: |
           mkdir -p docs/_data
           # Copy JSON files and rename with Jekyll-friendly names (dots to underscores)
           count=0
-          for file in artifacts/*.aggregate.json; do
+          for file in artifacts/*.validate.json; do
             if [ -f "$file" ]; then
-              basename=$(basename "$file" .aggregate.json)
+              basename=$(basename "$file" .validate.json)
               # Convert rp2.closehaul to rp2_closehaul for Jekyll
               newname=$(echo "$basename" | tr '.' '_')
               cp "$file" "docs/_data/${newname}.json"
@@ -112,9 +112,9 @@ jobs:
               count=$((count + 1))
             fi
           done
-          echo "Total aggregate files copied: $count"
+          echo "Total validate files copied: $count"
           if [ $count -eq 0 ]; then
-            echo "ERROR: No aggregate files were copied!"
+            echo "ERROR: No validate files were copied!"
             exit 1
           fi
       

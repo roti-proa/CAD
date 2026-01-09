@@ -76,7 +76,7 @@ DESIGN_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).design.FCStd
 MASS_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).mass.json
 BUOYANCY_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).buoyancy.json
 STABILITY_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).stability.json
-AGGREGATE_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).aggregate.json
+VALIDATE_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).validate.json
 JEKYLL_DATA := $(DOCS_DATA_DIR)/$(BOAT).$(CONFIGURATION).json
 
 # ==============================================================================
@@ -159,10 +159,10 @@ $(ARTIFACTS_DIR) $(DOCS_DATA_DIR):
 	@mkdir -p $@
 
 # Generate a single design
-$(DESIGN_ARTIFACT): $(PARAMETERS_ARTIFACT) $(DESIGN_DIR)/design.FCMacro | $(DESIGN_DIR)
+$(DESIGN_ARTIFACT): $(PARAMETERS_ARTIFACT) $(DESIGN_DIR)/design.py | $(DESIGN_DIR)
 	@echo "Generating design: $(BOAT).$(CONFIGURATION)"
 	@echo "  Parameters: $(PARAMETERS_ARTIFACT)"
-	@$(FREECAD_CMD) $(DESIGN_DIR)/design.FCMacro $(PARAMETERS_ARTIFACT) $(DESIGN_ARTIFACT) || true
+	@$(FREECAD_CMD) $(DESIGN_DIR)/design.py $(PARAMETERS_ARTIFACT) $(DESIGN_ARTIFACT) || true
 	@if [ -f "$(DESIGN_ARTIFACT)" ]; then \
 		echo "✓ Design complete: $(DESIGN_ARTIFACT)"; \
 		if [ "$(UNAME)" = "Darwin" ]; then \
@@ -224,7 +224,7 @@ $(STABILITY_ARTIFACT): $(MASS_ARTIFACT) $(BUOYANCY_ARTIFACT) $(PARAMETERS_ARTIFA
 		--output $@
 
 # Aggregate all artifacts into a single JSON for Jekyll
-$(AGGREGATE_ARTIFACT): $(PARAMETERS_ARTIFACT) $(MASS_ARTIFACT) | $(DOCS_DATA_DIR) 
+$(VALIDATE_ARTIFACT): $(PARAMETERS_ARTIFACT) $(MASS_ARTIFACT) | $(DOCS_DATA_DIR) 
 	@echo "Aggregating artifacts: $(BOAT).$(CONFIGURATION)"
 	@mkdir -p $(DOCS_DATA_DIR)
 	@python3 -c "import json; \
@@ -233,7 +233,7 @@ $(AGGREGATE_ARTIFACT): $(PARAMETERS_ARTIFACT) $(MASS_ARTIFACT) | $(DOCS_DATA_DIR
 		mass = json.load(open('$(MASS_ARTIFACT)')); \
 		result = {'boat': boat, 'configuration': configuration, 'parameters': parameters, 'mass': mass}; \
 		json.dump(result, open('$@', 'w'), indent=2)"
-	@echo "✓ Aggregated artifact: $@"
+	@echo "✓ Validate artifact: $@"
 
 # $(BUOYANCY_ARTIFACT) $(STABILITY_ARTIFACT) 
 #	, 'buoyancy': buoyancy, 'stability': stability
@@ -243,10 +243,10 @@ $(AGGREGATE_ARTIFACT): $(PARAMETERS_ARTIFACT) $(MASS_ARTIFACT) | $(DOCS_DATA_DIR
 
 # Validate a single design (runs all validators based on configuration)
 validate: 
-	@if make -q $(AGGREGATE_ARTIFACT) 2>/dev/null; then \
+	@if make -q $(VALIDATE_ARTIFACT) 2>/dev/null; then \
 		echo "✓ Validation already up to date"; \
 	else \
-		$(MAKE) $(AGGREGATE_ARTIFACT); \
+		$(MAKE) $(VALIDATE_ARTIFACT); \
 		echo "✓ Validation rebuilt"; \
 	fi
 
