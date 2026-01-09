@@ -1,0 +1,245 @@
+#!/usr/bin/env python3
+"""
+SolarProa GUI Macro - Interactive design generation from FreeCAD GUI
+
+This macro provides a dialog to select boat and configuration, then calls
+the Makefile to generate the design using the full build pipeline.
+
+This ensures:
+- Parameter changes are picked up
+- Code changes are picked up
+- Full validation pipeline runs
+- Consistent with command-line builds
+"""
+
+import FreeCAD
+import sys
+import os
+import json
+import subprocess
+import platform
+
+# Get the directory where this macro is located
+try:
+    macro_dir = os.path.dirname(os.path.abspath(__file__))
+except NameError:
+    # When run from GUI, __file__ might not be defined
+    macro_dir = FreeCAD.getUserMacroDir(True)
+
+# Find repository root
+repo_root = os.path.abspath(os.path.join(macro_dir, '..', '..'))
+
+print(f"Repository root: {repo_root}")
+
+# Find available boats and configurations
+boats_dir = os.path.join(repo_root, 'constants', 'boats')
+configs_dir = os.path.join(repo_root, 'constants', 'configurations')
+
+boats = sorted([f.replace('.json', '') for f in os.listdir(boats_dir) if f.endswith('.json')])
+configurations = sorted([f.replace('.json', '') for f in os.listdir(configs_dir) if f.endswith('.json')])
+
+print(f"Available boats: {boats}")
+print(f"Available configurations: {configurations}")
+
+# Import Qt for dialog
+if FreeCAD.GuiUp:
+    from PySide import QtGui, QtCore
+    
+    class DesignDialog(QtGui.QDialog):
+        def __init__(self):
+            super(DesignDialog, self).__init__()
+            self.setWindowTitle("Solar Proa Design Generator")
+            self.setMinimumWidth(400)
+            
+            layout = QtGui.QVBoxLayout()
+            
+            # Info label
+            info = QtGui.QLabel("Generates design via Makefile (picks up all changes)")
+            info.setStyleSheet("color: #666; font-style: italic;")
+            layout.addWidget(info)
+            
+            # Boat selection
+            boat_group = QtGui.QGroupBox("Select Boat")
+            boat_layout = QtGui.QVBoxLayout()
+            self.boat_combo = QtGui.QComboBox()
+            self.boat_combo.addItems([b.upper() for b in boats])
+            self.boat_combo.setCurrentIndex(boats.index('rp2') if 'rp2' in boats else 0)
+            boat_layout.addWidget(self.boat_combo)
+            boat_group.setLayout(boat_layout)
+            layout.addWidget(boat_group)
+            
+            # Configuration selection
+            config_group = QtGui.QGroupBox("Select Configuration")
+            config_layout = QtGui.QVBoxLayout()
+            self.config_combo = QtGui.QComboBox()
+            # Display with nice names
+            config_names = [c.replace('_', ' ').title() for c in configurations]
+            self.config_combo.addItems(config_names)
+            self.config_combo.setCurrentIndex(configurations.index('closehaul') if 'closehaul' in configurations else 0)
+            config_layout.addWidget(self.config_combo)
+            config_group.setLayout(config_layout)
+            layout.addWidget(config_group)
+            
+            # Buttons
+            button_layout = QtGui.QHBoxLayout()
+            generate_btn = QtGui.QPushButton("Generate Design")
+            generate_btn.clicked.connect(self.accept)
+            generate_btn.setDefault(True)
+            button_layout.addWidget(generate_btn)
+            cancel_btn = QtGui.QPushButton("Cancel")
+            cancel_btn.clicked.connect(self.reject)
+            button_layout.addWidget(cancel_btn)
+            layout.addLayout(button_layout)
+            
+            self.setLayout(layout)
+        
+        def get_boat(self):
+            return boats[self.boat_combo.currentIndex()]
+        
+        def get_configuration(self):
+            return configurations[self.config_combo.currentIndex()]
+    
+    # Show dialog
+    dialog = DesignDialog()
+    if dialog.exec_() != QtGui.QDialog.Accepted:
+        print("Design generation cancelled")
+        sys.exit(0)
+    
+    boat = dialog.get_boat()
+    configuration = dialog.get_configuration()
+else:
+    # Console mode - use defaults
+    boat = 'rp2'
+    configuration = 'closehaul'
+
+print(f"\nGenerating design via Makefile:")
+print(f"  Boat: {boat}")
+print(f"  Configuration: {configuration}")
+
+# Change to repo directory and run make
+os.chdir(repo_root)
+
+# Try to find make in common locations
+make_cmd = 'make'
+if platform.system() == 'Darwin':
+    # On macOS, try common locations
+    for possible_make in ['/usr/bin/make', '/opt/homebrew/bin/make', '/usr/local/bin/make']:
+        if os.path.exists(possible_make):
+            make_cmd = possible_make
+            print(f"Found make at: {make_cmd}")
+            break
+
+# On macOS, skip visibility fix in make since we'll do it after opening
+make_env = os.environ.copy()
+
+# Clean Python environment variables that conflict with system Python
+# FreeCAD sets these for its embedded Python, but they break system Python
+python_vars_to_remove = [
+    'PYTHONHOME',
+    'PYTHONPATH',
+    'PYTHONEXECUTABLE',
+]
+for var in python_vars_to_remove:
+    make_env.pop(var, None)
+
+if platform.system() == 'Darwin':
+    # Set an environment variable to skip visibility fix in make
+    make_env['SKIP_VISIBILITY_FIX'] = '1'
+
+print(f"Running: {make_cmd} design BOAT={boat} CONFIGURATION={configuration}")
+
+try:
+    result = subprocess.run(
+        [make_cmd, 'design', f'BOAT={boat}', f'CONFIGURATION={configuration}'],
+        capture_output=True,
+        text=True,
+        encoding='utf-8',
+        errors='replace',  # Replace non-decodable characters instead of failing
+        env=make_env
+    )
+except FileNotFoundError as e:
+    error_msg = f"Make command not found: {make_cmd}\n\nPlease install Xcode Command Line Tools:\nxcode-select --install"
+    print(f"\n✗ ERROR: {error_msg}")
+    if FreeCAD.GuiUp:
+        QtGui.QMessageBox.critical(None, "Make Not Found", error_msg)
+    sys.exit(1)
+
+print("\n" + "="*60)
+print("Make output:")
+print(result.stdout)
+if result.stderr:
+    print("Stderr:")
+    print(result.stderr)
+print("="*60)
+
+if result.returncode == 0:
+    design_file = os.path.join(repo_root, 'artifacts', f'{boat}.{configuration}.design.FCStd')
+    if os.path.exists(design_file):
+        print(f"\n✓ Design complete!")
+        print(f"  File: {design_file}")
+        
+        # On macOS, fix visibility now (in this FreeCAD instance, not a new one)
+        if FreeCAD.GuiUp and platform.system() == 'Darwin':
+            print("Fixing visibility in current FreeCAD session...")
+            try:
+                # Open the document
+                doc = FreeCAD.openDocument(design_file)
+                
+                # Import FreeCADGui for ViewObject access
+                import FreeCADGui
+                
+                # Set visibility for all objects
+                def make_visible(obj_list):
+                    for obj in obj_list:
+                        try:
+                            if hasattr(obj, 'ViewObject') and obj.ViewObject:
+                                if 'Origin' in obj.Name or obj.TypeId == 'App::Origin':
+                                    obj.ViewObject.Visibility = False
+                                else:
+                                    obj.ViewObject.Visibility = True
+                        except:
+                            pass
+                        if hasattr(obj, 'Group') and obj.Group:
+                            make_visible(obj.Group)
+                
+                make_visible(doc.Objects)
+                
+                # Save and close
+                doc.save()
+                FreeCAD.closeDocument(doc.Name)
+                print("✓ Visibility fixed")
+            except Exception as e:
+                print(f"Warning: Could not fix visibility: {e}")
+        
+        if FreeCAD.GuiUp:
+            # Close all existing documents
+            for doc in FreeCAD.listDocuments().values():
+                FreeCAD.closeDocument(doc.Name)
+            
+            # Open the new design
+            FreeCAD.openDocument(design_file)
+            
+            # Set a good view
+            import FreeCADGui
+            FreeCADGui.activeDocument().activeView().viewIsometric()
+            FreeCADGui.SendMsgToActiveView("ViewFit")
+            
+            print("✓ Design opened in FreeCAD")
+    else:
+        print(f"\n✗ Design file not found: {design_file}")
+        if FreeCAD.GuiUp:
+            QtGui.QMessageBox.warning(None, "Error", f"Design file not found:\n{design_file}")
+else:
+    print(f"\n✗ Make failed with return code {result.returncode}")
+    error_output = result.stdout + "\n" + result.stderr if result.stderr else result.stdout
+    # Show last 500 chars of output
+    error_summary = error_output[-500:] if len(error_output) > 500 else error_output
+    if FreeCAD.GuiUp:
+        QtGui.QMessageBox.critical(
+            None, 
+            "Design Generation Failed", 
+            f"Make failed with return code {result.returncode}\n\n"
+            f"Error output:\n{error_summary}\n\n"
+            f"Check the Report View for full details."
+        )
+

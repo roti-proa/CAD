@@ -166,12 +166,10 @@ $(DESIGN_ARTIFACT): $(PARAMETERS_ARTIFACT) $(DESIGN_DIR)/design.FCMacro | $(DESI
 	@if [ -f "$(DESIGN_ARTIFACT)" ]; then \
 		echo "✓ Design complete: $(DESIGN_ARTIFACT)"; \
 		if [ "$(UNAME)" = "Darwin" ]; then \
-			echo "Running fix_visibility_max.sh on macOS..."; \
-			bash src/design/fix_visibility_mac.sh "$(DESIGN_ARTIFACT)" "$(FREECAD_APP)"; \
-		else \
-			echo "Running fix_visibility_linux.sh on Linux..."; \
-			bash $(SRC_DIR)/fix_visibility_linux.sh "$(DESIGN_ARTIFACT)" "$(FREECAD_CMD)"; \
+			echo "Fixing visibility on macOS..."; \
+			bash $(DESIGN_DIR)/fix_visibility.sh "$(DESIGN_ARTIFACT)" "$(FREECAD_APP)"; \
 		fi; \
+		echo "✓ Design ready: $(DESIGN_ARTIFACT)"; \
 	else \
 		echo "ERROR: Design failed - no design file created"; \
 		exit 1; \

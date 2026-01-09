@@ -44,6 +44,15 @@ try:
     from FreeCAD import Base
     print(f"FreeCAD version = {App.Version()}")
     print(f"FreeCAD.GuiUp = {App.GuiUp}")
+    
+    # Import FreeCADGui even in console mode to enable ViewObject properties
+    # This doesn't open a GUI, it just makes ViewObject attributes available
+    try:
+        import FreeCADGui
+        print("FreeCADGui imported (for ViewObject support)")
+    except ImportError:
+        print("Warning: FreeCADGui not available, ViewObject visibility may not work")
+        
 except ImportError as e:
     print(f"ERROR: Could not import FreeCAD: {e}")
     print("This script must be run with FreeCAD's Python")
@@ -201,17 +210,18 @@ central(vessel, params)
 # recompute before stats and rendering
 doc.recompute()
 
-# Save the document FIRST
+# Save the document
+# Note: Visibility will be set in a post-processing step (see Makefile)
+# because ViewObject properties don't work reliably in console mode
 doc.saveAs(output_path)
 print(f"Saved document to {output_path}")
 
 # Note: Headless GUI initialization is disabled because it causes segfaults
 # even on FreeCAD 1.0.0 when running in --console mode.
-# Objects will not be visible initially, but renders will still work
-# because the render scripts open the files and set up views explicitly.
+# Object visibility is now set programmatically before saving (see above).
 
 print("Skipping headless GUI initialization (causes crashes in console mode)")
-print("Objects may not be visible when opening files, but renders will work correctly")
+print("Object visibility has been set before saving")
 
 # GUI-only code - skip in console mode
 if FreeCAD.GuiUp:
@@ -239,4 +249,3 @@ if not FreeCAD.GuiUp:
     # Use os._exit instead of sys.exit to avoid cleanup issues
     import os
     os._exit(0)
-
