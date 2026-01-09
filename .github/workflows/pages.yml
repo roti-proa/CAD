@@ -68,6 +68,10 @@ jobs:
         run: |
           make design-all
 
+      - name: Validate all models and generate aggregate data
+        run: |
+          make validate-all
+
       - name: Export renders from all models
         run: |
           make render-all

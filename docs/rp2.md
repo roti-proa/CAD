@@ -55,19 +55,19 @@ title: Roti Proa II - 9m Day Tourism Vessel
 
 The vessel can be configured for different sailing conditions and use cases:
 
-{% assign rp2_configs = "Beaching,BeamReach,BroadReach,CloseHaul,CloseHaulReefed,GooseWing" | split: "," %}
+{% assign rp2_configs = "beaching,beamreach,broadreach,closehaul,closehaulreefed,goosewing" | split: "," %}
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em; margin: 2em 0;">
 {% for config in rp2_configs %}
   <div style="border: 1px solid #ddd; padding: 1em; border-radius: 4px;">
-    <h4>{{ config | replace: "BeamReach", "Beam Reach" | replace: "BroadReach", "Broad Reach" | replace: "CloseHaul", "Close Haul" | replace: "CloseHaulReefed", "Close Haul Reefed" | replace: "GooseWing", "Goose Wing" }}</h4>
+    <h4>{{ config | capitalize | replace: "beamreach", "Beam Reach" | replace: "broadreach", "Broad Reach" | replace: "closehaul", "Close Haul" | replace: "closehaulreefed", "Close Haul Reefed" | replace: "goosewing", "Goose Wing" }}</h4>
     <p style="font-size: 0.9em; color: #666;">
-    {% if config == "Beaching" %}Beached configuration for maintenance{% endif %}
-    {% if config == "BeamReach" %}Cross-wind sailing{% endif %}
-    {% if config == "BroadReach" %}Downwind sailing{% endif %}
-    {% if config == "CloseHaul" %}Upwind sailing{% endif %}
-    {% if config == "CloseHaulReefed" %}Reefed for heavy weather{% endif %}
-    {% if config == "GooseWing" %}Running downwind{% endif %}
+    {% if config == "beaching" %}Beached configuration for maintenance{% endif %}
+    {% if config == "beamreach" %}Cross-wind sailing{% endif %}
+    {% if config == "broadreach" %}Downwind sailing{% endif %}
+    {% if config == "closehaul" %}Upwind sailing{% endif %}
+    {% if config == "closehaulreefed" %}Reefed for heavy weather{% endif %}
+    {% if config == "goosewing" %}Running downwind{% endif %}
     </p>
   </div>
 {% endfor %}
@@ -79,10 +79,10 @@ The vessel can be configured for different sailing conditions and use cases:
 
 *Automatically generated from parametric CAD models*
 
-{% assign render_files = site.static_files | where_exp: "file", "file.path contains 'renders'" | where_exp: "file", "file.path contains 'RP2'" | where_exp: "file", "file.extname == '.png'" %}
+{% assign render_files = site.static_files | where_exp: "file", "file.path contains 'renders'" | where_exp: "file", "file.path contains 'rp2'" | where_exp: "file", "file.extname == '.png'" %}
 
 {% for config in rp2_configs %}
-  <h3>{{ config | replace: "BeamReach", "Beam Reach" | replace: "BroadReach", "Broad Reach" | replace: "CloseHaul", "Close Haul" | replace: "CloseHaulReefed", "Close Haul Reefed" | replace: "GooseWing", "Goose Wing" }}</h3>
+  <h3>{{ config | capitalize | replace: "beamreach", "Beam Reach" | replace: "broadreach", "Broad Reach" | replace: "closehaul", "Close Haul" | replace: "closehaulreefed", "Close Haul Reefed" | replace: "goosewing", "Goose Wing" }}</h3>
   
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1em; margin: 2em 0;">
   {% assign config_files = render_files | where_exp: "file", "file.basename contains config" | sort: "basename" %}
@@ -90,7 +90,7 @@ The vessel can be configured for different sailing conditions and use cases:
     <div>
       <img src="{{ file.path | relative_url }}" alt="{{ file.basename }}" style="width: 100%; border: 1px solid #ddd; border-radius: 4px;">
       <p style="text-align: center; font-size: 0.9em; color: #666; margin-top: 0.5em;">
-        {{ file.basename | replace: "RotiProa_RP2_", "" | replace: config, "" | replace: "_", "" | replace: "Front", "Front View" | replace: "Isometric", "Isometric View" | replace: "Right", "Right View" | replace: "Top", "Top View" }}
+        {{ file.basename | remove: "rp2." | remove: config | remove: ".render." | remove: "_" | replace: "Front", "Front View" | replace: "Isometric", "Isometric View" | replace: "Right", "Right View" | replace: "Top", "Top View" }}
       </p>
     </div>
   {% endfor %}
