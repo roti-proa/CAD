@@ -86,6 +86,27 @@ from material import *
 
 print("All imports complete")
 
+# Initialize headless GUI (Linux only) - MUST be done before creating document
+# This is the same approach used in render.py
+import platform
+if platform.system() == 'Linux' and not App.GuiUp:
+    print("Initializing headless GUI (Linux) before document creation...")
+    try:
+        from PySide import QtGui
+        try:
+            QtGui.QApplication()
+        except RuntimeError:
+            pass  # QApplication already exists
+        
+        import FreeCADGui as Gui
+        Gui.showMainWindow()
+        Gui.getMainWindow().destroy()
+        App.ParamGet('User parameter:BaseApp/Preferences/Document').SetBool('SaveThumbnail', False)
+        print("✓ Headless GUI initialized")
+    except Exception as e:
+        print(f"Warning: Could not initialize headless GUI: {e}")
+        print("ViewObject visibility may not work")
+
 # Close all open documents
 for doc_name in App.listDocuments():
     App.closeDocument(doc_name)
@@ -210,51 +231,38 @@ central(vessel, params)
 # recompute before stats and rendering
 doc.recompute()
 
-# Initialize GUI in headless mode for ViewObject support (Linux only)
-# On macOS this causes issues, so we use post-processing instead
-import platform
-if not FreeCAD.GuiUp and platform.system() != 'Darwin':
-    print("Initializing GUI in headless mode (Linux) for ViewObject support...")
+# Set visibility for all objects (works because GUI was initialized early)
+if platform.system() == 'Linux':
+    print("Setting object visibility...")
+    def make_all_visible(obj_list):
+        """Recursively make all objects visible"""
+        for obj in obj_list:
+            try:
+                if hasattr(obj, 'ViewObject') and obj.ViewObject:
+                    # Hide Origin objects (coordinate helpers)
+                    if 'Origin' in obj.Name or obj.TypeId == 'App::Origin':
+                        obj.ViewObject.Visibility = False
+                    else:
+                        obj.ViewObject.Visibility = True
+            except Exception as e:
+                pass
+            # Recurse into groups
+            if hasattr(obj, 'Group') and obj.Group:
+                make_all_visible(obj.Group)
+    
     try:
-        from PySide import QtGui
-        try:
-            QtGui.QApplication()
-        except RuntimeError:
-            pass  # QApplication already exists
-        
-        import FreeCADGui as Gui
-        Gui.showMainWindow()
-        Gui.getMainWindow().destroy()
-        print("✓ GUI initialized (Linux)")
-        
-        # Set visibility for all objects
-        print("Setting object visibility...")
-        def make_all_visible(obj_list):
-            """Recursively make all objects visible"""
-            for obj in obj_list:
-                try:
-                    if hasattr(obj, 'ViewObject') and obj.ViewObject:
-                        # Hide Origin objects (coordinate helpers)
-                        if 'Origin' in obj.Name or obj.TypeId == 'App::Origin':
-                            obj.ViewObject.Visibility = False
-                        else:
-                            obj.ViewObject.Visibility = True
-                except Exception as e:
-                    pass
-                # Recurse into groups
-                if hasattr(obj, 'Group') and obj.Group:
-                    make_all_visible(obj.Group)
-        
         make_all_visible(doc.Objects)
         print(f"✓ Visibility set for {len(doc.Objects)} objects")
     except Exception as e:
-        print(f"Warning: Could not initialize GUI/set visibility: {e}")
+        print(f"Warning: Could not set visibility: {e}")
 
 # Save the document
 doc.saveAs(output_path)
 print(f"Saved document to {output_path}")
 if platform.system() == 'Darwin':
-    print("Note: Visibility will be fixed in post-processing on macOS")
+    print("Note: Visibility will be fixed by post-processing on macOS")
+elif platform.system() == 'Linux':
+    print("✓ Objects should be visible when opening")
 
 
 # GUI-only code - skip in console mode
