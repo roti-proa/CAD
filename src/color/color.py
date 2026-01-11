@@ -96,15 +96,6 @@ def apply_colors(doc, color_scheme):
             if hasattr(obj, 'ViewObject') and obj.ViewObject:
                 mat_key = get_material_from_label(obj.Label)
                 
-                # Debug: Print first few objects to see what's happening
-                if stats['total_objects'] <= 5:
-                    print(f"  DEBUG: Object '{obj.Label}' -> material key: '{mat_key}'", file=sys.stderr)
-                    if mat_key:
-                        if mat_key in materials_def:
-                            print(f"    -> Found in materials_def", file=sys.stderr)
-                        else:
-                            print(f"    -> NOT found in materials_def (available: {list(materials_def.keys())[:5]}...)", file=sys.stderr)
-                
                 if mat_key and mat_key in materials_def:
                     mat_def = materials_def[mat_key]
                     

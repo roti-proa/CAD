@@ -137,10 +137,10 @@ except Exception as e:
 # mirrored parts: Biru (blue) side is on the right as seen
 # standing on the vaka facing the ama
 
-biru = doc.addObject("App::Part", "Mirrored: Biru")
+biru = doc.addObject("App::Part", "Mirrored Biru")
 mirror(biru, params)
 
-kuning = doc.addObject("App::Part", "Mirrored: Kuning")
+kuning = doc.addObject("App::Part", "Mirrored Kuning")
 for obj in biru.Group:
     mirrored_obj = kuning.newObject("Part::Feature", obj.Name)
     
@@ -161,7 +161,7 @@ for obj in biru.Group:
 
 # rig_biru with specified rotation and camber
 
-rig_biru = doc.addObject("App::Part", "Rig: Biru")
+rig_biru = doc.addObject("App::Part", "Rig Biru")
 rig(rig_biru, params, sail_angle=params['sail_angle_biru'],
     sail_camber=params['sail_camber_biru'],
     reefing_percentage=params['reefing_percentage_biru'])
@@ -173,7 +173,7 @@ rig_biru.Placement = FreeCAD.Placement(
                      params['rig_rotation_biru']))
 
 # rig_kuning with specified rotation and camber
-rig_kuning = doc.addObject("App::Part", "Rig: Kuning")
+rig_kuning = doc.addObject("App::Part", "Rig Kuning")
 rig(rig_kuning, params, sail_angle=params['sail_angle_kuning'],
     sail_camber=params['sail_camber_kuning'],
     reefing_percentage=params['reefing_percentage_kuning'])
@@ -187,7 +187,7 @@ rig_kuning.Placement = FreeCAD.Placement(
 
 # rudder_biru with rudder_rotation_biru
 
-rudder_biru = doc.addObject("App::Part", "Rudder: Biru")
+rudder_biru = doc.addObject("App::Part", "Rudder Biru")
 rudder(rudder_biru, params, params['rudder_raised_biru'])
 rudder_biru.Placement = FreeCAD.Placement(
     Base.Vector(params['vaka_x_offset'] - params['vaka_width'] / 2
@@ -200,7 +200,7 @@ rudder_biru.Placement = FreeCAD.Placement(
 
 # rudder_kuning with rudder_rotation_kuning
 
-rudder_kuning = doc.addObject("App::Part", "Rudder: Kuning")
+rudder_kuning = doc.addObject("App::Part", "Rudder Kuning")
 rudder(rudder_kuning, params, params['rudder_raised_kuning'])
 rudder_kuning.Placement = FreeCAD.Placement(
     Base.Vector(params['vaka_x_offset'] - params['vaka_width'] / 2
@@ -213,7 +213,7 @@ rudder_kuning.Placement = FreeCAD.Placement(
 
 # boat: central unmirrored components: hull, sole, etc
 
-vessel = doc.addObject("App::Part", "Vessel: Central")
+vessel = doc.addObject("App::Part", "Vessel Central")
 central(vessel, params)
 
 # recompute before stats and rendering
