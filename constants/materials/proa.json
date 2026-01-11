@@ -4,124 +4,116 @@
   "version": "1.0",
   "materials": {
     "aluminum": {
+      "name": "Aluminum",
       "color": [0.75, 0.75, 0.78],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 2700,
       "description": "Structural aluminum tubes and profiles"
     },
     "steel": {
+      "name": "Steel",
       "color": [0.65, 0.65, 0.68],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 8000,
       "description": "Steel fasteners and hardware"
     },
     "stainless_steel": {
+      "name": "Stainless steel",
       "color": [0.85, 0.85, 0.87],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 8000,
       "description": "Stainless steel rigging and marine hardware"
     },
     "plywood": {
+      "name": "Plywood",
       "color": [0.76, 0.60, 0.42],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 630,
       "description": "Marine plywood decking and structure"
     },
     "marine_plywood": {
+      "name": "Marine plywood",
       "color": [0.76, 0.60, 0.42],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 660,
       "description": "Marine-grade plywood"
     },
     "bamboo": {
+      "name": "Bamboo",
       "color": [0.86, 0.70, 0.52],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 200,
       "description": "Bamboo components"
     },
     "wood": {
+      "name": "Wood",
       "color": [0.66, 0.50, 0.32],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 600,
       "description": "General wood components"
     },
     "pvc": {
+      "name": "PVC",
       "color": [0.95, 0.95, 0.95],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 1400,
       "description": "PVC pipes and fittings"
     },
     "foam": {
+      "name": "Foam",
       "color": [1.0, 0.85, 0.0],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 60,
       "description": "Flotation foam"
     },
-    "solar_panel": {
+    "solar": {
+      "name": "Solar panels",
       "color": [0.3, 0.3, 0.3],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 3000,
       "description": "Solar panels"
     },
     "canvas": {
+      "name": "Canvas",
       "color": [0.95, 0.92, 0.85],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 600,
       "description": "Canvas sail material"
     },
-    "rope": {
+    "nylon": {
+      "name": "Nylon",
       "color": [0.9, 0.8, 0.5],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 1000,
       "description": "Rope and cordage"
     },
     "plastic": {
+      "name": "Plastic",
       "color": [0.12, 0.90, 0.50],
       "transparency": 0,
       "display_mode": "Shaded",
+      "density_kg_m3": 1000,
       "description": "Plastic components"
     },
-    "hull_interior": {
-      "color": [0.5, 0.5, 0.5],
+    "fiberglass": {
+      "name": "Fiberglass",
+      "color": [1.0, 0.50, 0.50],
       "transparency": 0,
       "display_mode": "Shaded",
-      "description": "Hull interior surfaces"
-    },
-    "hull_exterior": {
-      "color": [1.0, 1.0, 1.0],
-      "transparency": 0,
-      "display_mode": "Shaded",
-      "description": "Hull exterior surfaces"
-    },
-    "deck": {
-      "color": [0.68, 0.85, 0.90],
-      "transparency": 0,
-      "display_mode": "Shaded",
-      "description": "Deck surfaces"
-    },
-    "bottom": {
-      "color": [0.9, 0.1, 0.1],
-      "transparency": 0,
-      "display_mode": "Shaded",
-      "description": "Hull bottom (spinnaker red)"
-    },
-    "sole": {
-      "color": [0.76, 0.60, 0.42],
-      "transparency": 0,
-      "display_mode": "Shaded",
-      "description": "Floor/sole surfaces"
-    },
-    "sail": {
-      "color": [0.95, 0.95, 0.88],
-      "transparency": 0,
-      "display_mode": "Shaded",
-      "description": "Sail fabric"
-    },
-    "ama": {
-      "color": [1.0, 1.0, 1.0],
-      "transparency": 0,
-      "display_mode": "Shaded",
-      "description": "Outrigger ama"
+      "density_kg_m3": 1000,
+      "description": "Fiberglass"
     }
   }
 }

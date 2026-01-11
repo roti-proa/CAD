@@ -201,7 +201,7 @@ design-all:
 	@echo "✓ All designs complete!"
 
 # Apply color scheme to design
-$(COLOR_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIALS_FILE) | $(COLOR_DIR)
+$(COLOR_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIALS_FILE) $(COLOR_DIR)/color.py | $(COLOR_DIR)
 	@echo "Applying color scheme '$(MATERIALS)' to $(BOAT).$(CONFIGURATION)..."
 	@if [ ! -f "$(MATERIALS_FILE)" ]; then \
 		echo "ERROR: Color scheme not found: $(MATERIALS_FILE)"; \
@@ -244,14 +244,14 @@ color-all:
 	@echo "✓ All designs colored!"
 
 # Mass analysis (depends on design, not colors - mass is geometry-based)
-$(MASS_ARTIFACT): $(DESIGN_ARTIFACT) $(MASS_DIR)/mass.py | $(ARTIFACTS_DIR)
+$(MASS_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIALS_FILE) $(MASS_DIR)/mass.py | $(ARTIFACTS_DIR)
 	@echo "Running mass analysis: $(BOAT).$(CONFIGURATION)"
 	@if [ "$(UNAME)" = "Darwin" ]; then \
 		PYTHONPATH=$(FREECAD_BUNDLE)/Contents/Resources/lib:$(FREECAD_BUNDLE)/Contents/Resources/Mod:$(PWD) \
 		DYLD_LIBRARY_PATH=$(FREECAD_BUNDLE)/Contents/Frameworks:$(FREECAD_BUNDLE)/Contents/Resources/lib \
-		$(FREECAD_PYTHON) $(MASS_DIR)/mass.py --design $(DESIGN_ARTIFACT) --output $@; \
+		$(FREECAD_PYTHON) $(MASS_DIR)/mass.py --design $(DESIGN_ARTIFACT) --materials $(MATERIALS_FILE) --output $@; \
 	else \
-		PYTHONPATH=$(PWD):$(PWD)/src/design $(FREECAD_PYTHON) $(MASS_DIR)/mass.py --design $(DESIGN_ARTIFACT) --output $@; \
+		PYTHONPATH=$(PWD):$(PWD)/src/design $(FREECAD_PYTHON) $(MASS_DIR)/mass.py --design $(DESIGN_ARTIFACT) --materials $(MATERIALS_FILE) --output $@; \
 	fi
 
 # Convenience target: apply mass to a single design

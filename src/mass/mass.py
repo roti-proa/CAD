@@ -8,20 +8,20 @@ import sys
 import os
 import json
 import argparse
+import json
 
 # Add src to path for FreeCAD imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..', 'src'))
 
 try:
     import FreeCAD as App
-    from material import *
 except ImportError as e:
     print(f"ERROR: {e}", file=sys.stderr)
     print("This script must be run with FreeCAD's Python", file=sys.stderr)
     sys.exit(1)
 
 
-def analyze_mass(fcstd_path: str) -> dict:
+def analyze_mass(fcstd_path: str, materials_path: str) -> dict:
     """
     Analyze mass properties of a FreeCAD model.
     
@@ -29,7 +29,12 @@ def analyze_mass(fcstd_path: str) -> dict:
         Dictionary with mass analysis results
     """
     doc = App.openDocument(fcstd_path)
-    
+
+    with open(materials_path, 'r') as m:
+        materials_data = json.load(m)
+
+    materials = materials_data["materials"]
+        
     material_weights = {}
     material_volumes = {}
     processed_labels = set()
@@ -63,25 +68,25 @@ def analyze_mass(fcstd_path: str) -> dict:
             if len(parts) >= 2:
                 mat_key = parts[1].rstrip('_0123456789').strip()
         
-        if mat_key and mat_key in material:
-            mat = material[mat_key]
+        if mat_key and mat_key in materials:
+            mat = materials[mat_key]
             volume_m3 = obj.Shape.Volume / 1e9
             volume_liters = volume_m3 * 1000
-            weight_kg = volume_m3 * mat['Density']
+            weight_kg = volume_m3 * mat['density_kg_m3']
             
             # Track by material
-            if mat['Name'] not in material_weights:
-                material_weights[mat['Name']] = 0
-                material_volumes[mat['Name']] = 0
-            material_weights[mat['Name']] += weight_kg
-            material_volumes[mat['Name']] += volume_liters
+            if mat_key not in material_weights:
+                material_weights[mat_key] = 0
+                material_volumes[mat_key] = 0
+            material_weights[mat_key] += weight_kg
+            material_volumes[mat_key] += volume_liters
             
             # Track individual component
             all_components.append({
                 'name': obj.Label,
                 'mass_kg': round(weight_kg, 2),
                 'volume_liters': round(volume_liters, 2),
-                'material': mat['Name']
+                'material': mat['name']
             })
             
             processed_labels.add(obj.Label)
@@ -114,6 +119,7 @@ def analyze_mass(fcstd_path: str) -> dict:
 def main():
     parser = argparse.ArgumentParser(description='Analyze mass properties of FreeCAD model')
     parser.add_argument('--design', required=True, help='Path to FCStd design file')
+    parser.add_argument('--materials', required=True, help='Path to materials JSON file')
     parser.add_argument('--output', required=True, help='Path to output JSON artifact')
     
     args = parser.parse_args()
@@ -123,7 +129,7 @@ def main():
         sys.exit(1)
     
     print(f"Analyzing mass properties: {args.design}")
-    result = analyze_mass(args.design)
+    result = analyze_mass(args.design, args.materials)
     
     # Write JSON output
     os.makedirs(os.path.dirname(args.output) or '.', exist_ok=True)
