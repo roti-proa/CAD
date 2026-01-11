@@ -81,7 +81,7 @@ def apply_colors(doc, color_scheme):
                         if 'color' in mat_def:
                             obj.ViewObject.ShapeColor = tuple(mat_def['color'])
                         
-                        # Apply transparency
+                        # Apply transparency (0-100)
                         if 'transparency' in mat_def:
                             obj.ViewObject.Transparency = mat_def['transparency']
                         

@@ -10,6 +10,7 @@ import sys
 import json
 import argparse
 import os
+import platform
 
 try:
     import FreeCAD as App
@@ -17,6 +18,26 @@ except ImportError:
     print("ERROR: Must run with FreeCAD Python", file=sys.stderr)
     sys.exit(1)
 
+
+# Initialize headless GUI (Linux only) - MUST be done BEFORE opening document
+# This enables ViewObject properties in console mode
+if platform.system() == 'Linux' and not App.GuiUp:
+    print("Initializing headless GUI for ViewObject support...")
+    try:
+        from PySide import QtGui
+        try:
+            QtGui.QApplication()
+        except RuntimeError:
+            pass  # QApplication already exists
+        
+        import FreeCADGui as Gui
+        Gui.showMainWindow()
+        Gui.getMainWindow().destroy()
+        App.ParamGet('User parameter:BaseApp/Preferences/Document').SetBool('SaveThumbnail', False)
+        print("✓ Headless GUI initialized")
+    except Exception as e:
+        print(f"Warning: Could not initialize headless GUI: {e}", file=sys.stderr)
+        print("ViewObject properties may not work", file=sys.stderr)
 
 def get_material_from_label(label):
     """
@@ -75,6 +96,15 @@ def apply_colors(doc, color_scheme):
             if hasattr(obj, 'ViewObject') and obj.ViewObject:
                 mat_key = get_material_from_label(obj.Label)
                 
+                # Debug: Print first few objects to see what's happening
+                if stats['total_objects'] <= 5:
+                    print(f"  DEBUG: Object '{obj.Label}' -> material key: '{mat_key}'", file=sys.stderr)
+                    if mat_key:
+                        if mat_key in materials_def:
+                            print(f"    -> Found in materials_def", file=sys.stderr)
+                        else:
+                            print(f"    -> NOT found in materials_def (available: {list(materials_def.keys())[:5]}...)", file=sys.stderr)
+                
                 if mat_key and mat_key in materials_def:
                     mat_def = materials_def[mat_key]
                     
@@ -104,7 +134,6 @@ def apply_colors(doc, color_scheme):
     
     process_objects(doc.Objects)
     return stats
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -140,6 +169,15 @@ def main():
     print(f"Opening design: {args.design}")
     doc = App.openDocument(args.design)
     
+    # Create GUI document to ensure ViewObject is available
+    if platform.system() == 'Linux':
+        try:
+            import FreeCADGui as Gui
+            Gui.getDocument(doc.Name)
+            print("✓ GUI document created")
+        except Exception as e:
+            print(f"Warning: Could not create GUI document: {e}", file=sys.stderr)
+    
     # Apply colors
     print("Applying colors...")
     stats = apply_colors(doc, color_scheme)
@@ -160,7 +198,7 @@ def main():
             except Exception as e:
                 pass
             # Recurse into groups
-            if hasattr(obj, 'Group') and obj.Group:
+            if hasattr(obj, 'Group'):
                 make_all_visible(obj.Group)
     
     make_all_visible(doc.Objects)
