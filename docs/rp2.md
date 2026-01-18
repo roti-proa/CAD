@@ -22,7 +22,7 @@ title: Roti Proa II - 9m Day Tourism Vessel
 **Overall Length:** {{ site.data.rp2_closehaul_parameter.vaka_length }} mm  
 **Beam:** {{ site.data.rp2_closehaul_parameter.beam }} mm (with outrigger)  
 **Total mass:** {{ site.data.rp2_beaching_mass.total_mass_kg }} kg  
-**Total unsinkable volume:** {{ site.data.rp2_beaching_mass.total_volume_liters }} liters  
+**Total unsinkable volume:** {{ site.data.rp2_beaching_mass.total_unsinkable_volume_liters }} liters  
 **Displacement in saltwater:** {{ site.data.rp2_beaching_mass.displacement_saltwater_kg }} kg  
 **Capacity:** 4 passengers + 2 crew  
 **Solar Power:** 4kW peak (8 panels)  
